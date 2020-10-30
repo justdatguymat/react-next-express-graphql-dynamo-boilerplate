@@ -1,0 +1,105 @@
+version: "3.7"
+volumes:
+  client_node_modules:
+  server_node_modules:
+
+services:
+  express-server:
+    build:
+      context: .
+      target: server-dependencies
+    command: yarn dev
+    ports:
+      - "9001:9001"
+    volumes:
+      - ./server/.env:/app/server/.env
+      - ./server/build:/app/server/build
+      - ./server/dist:/app/server/dist
+      - ./server/src:/app/server/src
+      - ./server/node_modules:/app/server/node_modules
+    links: 
+      - redis
+      - dynamodb
+
+  next-react:
+    build:
+      context: .
+      target: client-dependencies
+    command: yarn dev:conc
+    ports:
+      - "9000:3000"
+    volumes:
+      - ./client/src:/app/client/src
+      - ./client/public:/app/client/public
+      - ./client/node_modules:/app/client/node_modules
+    links:
+      - express-server
+
+  dynamodb:
+    image: amazon/dynamodb-local
+    entrypoint: java
+    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /home/data/db -port 9997
+    ports:
+      - "9997:9997"
+    volumes:
+      - ./data:/home/data/db
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+
+        #testreactapp: 
+        #  build: 
+        #    context: .
+        #    target: client-dependencies
+        #  command: npm run test
+        #  working_dir: /app/client
+        #  environment:
+        #    - CI=true
+        #    - STAGE=TEST
+        #    - PORT=9000
+        #    - API_VERSION=1
+        #    - FORCE_COLOR=true
+        #    - TERM=xterm-256color
+        #  ports:
+        #    - "9000:9000"
+        #  volumes:
+        #    - ./client/src:/app/client/src
+        #    - ./client/public:/app/client/public
+
+        #testreactapp-cov: 
+        #  build: 
+        #    context: .
+        #    target: client-dependencies
+        #  command: npm run test:coverage
+        #  working_dir: /app/client
+        #  environment:
+        #    - STAGE=TEST
+        #    - PORT=9000
+        #    - API_VERSION=1
+        #    - FORCE_COLOR=true
+        #    - TERM=xterm-256color
+        #  ports:
+        #    - "9000:9000"
+        #  volumes:
+        #    - ./client/src:/app/client/src
+        #    - ./client/public:/app/client/public
+
+        #testreactapp-watch: 
+        #  build: 
+        #    context: .
+        #    target: client-dependencies
+        #  command: npm run test:watch
+        #  working_dir: /app/client
+        #  environment:
+        #    - STAGE=TEST
+        #    - PORT=9000
+        #    - API_VERSION=1
+        #    - FORCE_COLOR=true
+        #    - TERM=xterm-256color
+        #  ports:
+        #    - "9000:9000"
+        #  volumes:
+        #    - ./client/src:/app/client/src
+        #    - ./client/public:/app/client/public

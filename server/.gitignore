@@ -1,0 +1,9 @@
+.env
+build
+dist
+logs
+node_modules
+
+tsconfig.tsbuildinfo
+yarn.lock
+

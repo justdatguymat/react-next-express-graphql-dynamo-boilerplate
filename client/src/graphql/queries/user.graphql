@@ -1,0 +1,10 @@
+query getUser($id: ID, $range: String, $data: String) {
+  getUser (
+    id: $id
+    range: $range
+    data: $data
+  ) {
+    ...UserFragment
+  }
+}
+    

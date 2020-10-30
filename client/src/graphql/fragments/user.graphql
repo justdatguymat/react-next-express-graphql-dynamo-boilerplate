@@ -1,0 +1,7 @@
+fragment UserFragment on User {
+  id
+  range
+  data
+  firstName
+  lastName
+}
