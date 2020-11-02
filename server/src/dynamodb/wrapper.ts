@@ -36,7 +36,9 @@ class ClientWrapper {
     return (await this.mapper.query(Model, attr, { indexName, limit: 1 }).next()).value;
   }
 
-  async get<T>(Model: ModelBaseType<T>, { id, range, data }: GetItemOptions): Promise<T | null> {
+  async get<T>(Model: ModelBaseType<T>, keys: GetItemOptions): Promise<T | null> {
+    const { id, range, data } = keys;
+    console.log('QUERY GET', Model.__type__, keys);
     try {
       if (id && range) {
         return await this.mapper.get(Object.assign(new Model(), { id, range }));

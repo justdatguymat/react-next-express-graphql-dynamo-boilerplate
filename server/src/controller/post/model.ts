@@ -2,6 +2,7 @@ import { attribute, hashKey, table } from '@aws/dynamodb-data-mapper-annotations
 import { DYNAMO_TABLE } from '@config/constants';
 import { BaseRecord, ModelTypes } from '@controller/base/model';
 import { hashKeyOptions, typeKeyOptions } from '@controller/options';
+import { User } from '@controller/user/model';
 import { Field, ID, ObjectType } from 'type-graphql';
 
 @ObjectType()
@@ -24,4 +25,7 @@ export class Post extends BaseRecord {
   @Field(() => String)
   @attribute()
   content: string;
+
+  @Field(() => User)
+  author: User;
 }

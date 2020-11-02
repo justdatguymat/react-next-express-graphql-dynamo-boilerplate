@@ -16,10 +16,12 @@ import { initDynamoClient } from '@dynamodb';
 import ClientWrapper from '@dynamodb/wrapper';
 import { Log } from '@logger';
 import { HttpServer } from '@server';
-import { ApolloResolverContext, SessionRequest } from '@types';
+import { ApolloResolverContext, Loaders, SessionRequest } from '@types';
 import { ApolloServer } from 'apollo-server-express';
 import { DynamoDB } from 'aws-sdk';
 import { buildSchema } from 'type-graphql';
+import DataLoader from 'dataloader';
+import { User } from '@controller/user/model';
 
 type BuildObjects = {
   apollo: ApolloServer;
@@ -29,6 +31,22 @@ type BuildObjects = {
   express: ExpressApp;
   server: HttpServer;
 };
+
+function createLoaders(mapper: DataMapper): Loaders {
+  const usersLoader = new DataLoader<string, User>(async (userIds) => {
+    const range = 'profile';
+    const toFetch = userIds.map((id) => Object.assign(new User(), { id, range }));
+    const users: User[] = [];
+    for await (const user of mapper.batchGet(toFetch)) {
+      users.push(user);
+    }
+    return users;
+  });
+
+  return {
+    users: usersLoader,
+  };
+}
 
 export async function buildServices(): Promise<BuildObjects> {
   const [dynamoClient, dynamoMapper, dynamoWrapper] = initDynamoClient({
@@ -52,6 +70,7 @@ export async function buildServices(): Promise<BuildObjects> {
     context: ({ req, res }): ApolloResolverContext => {
       const sessionReq = { ...req } as SessionRequest;
       return {
+        loaders: createLoaders(dynamoMapper),
         dynamo: dynamoClient,
         mapper: dynamoMapper,
         db: dynamoWrapper,

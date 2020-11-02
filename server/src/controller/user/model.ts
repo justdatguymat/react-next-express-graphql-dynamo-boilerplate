@@ -1,6 +1,7 @@
 import { attribute, hashKey, table } from '@aws/dynamodb-data-mapper-annotations';
 import { DYNAMO_TABLE } from '@config/constants';
 import { BaseRecord, ModelTypes } from '@controller/base/model';
+import { Post } from '@controller/post/model';
 import { hashKeyOptions, rangeKeyOptions, typeKeyOptions } from '@controller/options';
 import { Field, ID, ObjectType } from 'type-graphql';
 
@@ -31,4 +32,7 @@ export class User extends BaseRecord {
 
   @attribute()
   password: string;
+
+  @Field(() => [Post], { nullable: true })
+  posts: Post[];
 }

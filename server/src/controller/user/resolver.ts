@@ -1,18 +1,27 @@
 import { COOKIE_NAME, HASH_SALT } from '@config/constants';
 import { crudResolverFactory } from '@controller/base/resolver';
 import { OperationError, UserAlreadyExistError, WrongPasswordError } from '@controller/errors';
+import { Post } from '@controller/post/model';
 import { Log } from '@logger';
 import { ApolloResolverContext } from '@types';
 import { AuthenticationError } from 'apollo-server-express';
 import bcrypt from 'bcrypt';
-import { Arg, Ctx, Mutation, Query, Resolver } from 'type-graphql';
+import { Arg, Ctx, FieldResolver, Mutation, Query, Resolver, Root } from 'type-graphql';
 import { LoginInput, RegisterInput, UserInput } from './input';
 import { User } from './model';
 
 const UserResolverBase = crudResolverFactory<User, UserInput>(User, UserInput);
 
-@Resolver(User)
+@Resolver(() => User)
 export class UserResolver extends UserResolverBase {
+  @FieldResolver(() => [Post], { name: 'posts' })
+  async getPosts(@Ctx() { db }: ApolloResolverContext, @Root() user: User): Promise<Post[]> {
+    const rangePrefix = 'Post#' + user.id;
+    const userPosts = await db.getAll<Post>(Post, rangePrefix);
+
+    return userPosts;
+  }
+
   @Query(() => User)
   async myself(@Ctx() { db, req }: ApolloResolverContext): Promise<User> {
     const { userId: id, userRange: range } = req.session;
@@ -61,7 +70,7 @@ export class UserResolver extends UserResolverBase {
     @Ctx() { db, req }: ApolloResolverContext
   ): Promise<User> {
     const { email: data } = input;
-    const user = await db.get<User>(User, { data, range: 'internal' });
+    const user = await db.get<User>(User, { data, range: '' });
 
     if (!user) {
       throw new OperationError('User not found');
