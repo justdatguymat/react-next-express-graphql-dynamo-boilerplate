@@ -23,6 +23,6 @@ module.exports = {
     indent: ['error', 2, { SwitchCase: 1 }],
     quotes: ['error', 'single'],
     semi: ['error', 'always'],
-    'no-unused-vars': [2, { args: 'after-used', argsIgnorePattern: '^_' }],
+    'no-unused-vars': [2, { args: 'after-used', argsIgnorePattern: '^_*' }],
   },
 };

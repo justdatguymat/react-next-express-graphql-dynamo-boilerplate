@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { ExpressApp } from '@app';
+import { ExpressApp } from '@express-app';
 import { DataMapper } from '@aws/dynamodb-data-mapper';
 import {
   DYNAMO_URL,
@@ -13,40 +13,24 @@ import {
 import { PostResolver } from '@controller/post/resolver';
 import { UserResolver } from '@controller/user/resolver';
 import { initDynamoClient } from '@dynamodb';
-import ClientWrapper from '@dynamodb/wrapper';
+import DynamoWrapper from '@dynamodb/wrapper';
 import { Log } from '@logger';
 import { HttpServer } from '@server';
-import { ApolloResolverContext, Loaders, SessionRequest } from '@types';
+import { ApolloResolverContext, RequestWithSession } from '@types';
 import { ApolloServer } from 'apollo-server-express';
 import { DynamoDB } from 'aws-sdk';
 import { buildSchema } from 'type-graphql';
-import DataLoader from 'dataloader';
-import { User } from '@controller/user/model';
+import { createLoaders } from '@loader';
+import { authChecker, getSessionUser } from '@auth';
 
 type BuildObjects = {
   apollo: ApolloServer;
   dynamoClient: DynamoDB;
   dynamoMapper: DataMapper;
-  dynamoWrapper: ClientWrapper;
+  dynamoWrapper: DynamoWrapper;
   express: ExpressApp;
   server: HttpServer;
 };
-
-function createLoaders(mapper: DataMapper): Loaders {
-  const usersLoader = new DataLoader<string, User>(async (userIds) => {
-    const range = 'profile';
-    const toFetch = userIds.map((id) => Object.assign(new User(), { id, range }));
-    const users: User[] = [];
-    for await (const user of mapper.batchGet(toFetch)) {
-      users.push(user);
-    }
-    return users;
-  });
-
-  return {
-    users: usersLoader,
-  };
-}
 
 export async function buildServices(): Promise<BuildObjects> {
   const [dynamoClient, dynamoMapper, dynamoWrapper] = initDynamoClient({
@@ -60,6 +44,7 @@ export async function buildServices(): Promise<BuildObjects> {
     debug: !PROD,
     schema: await buildSchema({
       resolvers: [UserResolver, PostResolver],
+      authChecker: authChecker,
       validate: {
         validationError: {
           value: !PROD,
@@ -67,14 +52,16 @@ export async function buildServices(): Promise<BuildObjects> {
         },
       },
     }),
-    context: ({ req, res }): ApolloResolverContext => {
-      const sessionReq = { ...req } as SessionRequest;
+    context: async ({ req, res }): Promise<ApolloResolverContext> => {
+      const reqWithSession = { ...req } as RequestWithSession;
+      const user = await getSessionUser(reqWithSession.session, dynamoWrapper);
       return {
+        user: user,
         loaders: createLoaders(dynamoMapper),
         dynamo: dynamoClient,
         mapper: dynamoMapper,
         db: dynamoWrapper,
-        req: sessionReq,
+        req: reqWithSession,
         res,
       };
     },

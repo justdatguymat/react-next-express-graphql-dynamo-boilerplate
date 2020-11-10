@@ -9,8 +9,7 @@ import {
   useRegisterMutation,
   useMyselfQuery,
   useLogoutMutation,
-} from 'generated/graphql';
-import { OperationResult } from 'urql';
+} from 'codegen/graphql-apollo';
 import {
   extractMessageErrors,
   extractValidationErrors,
@@ -18,8 +17,8 @@ import {
 } from 'utils/errorHandlers';
 import { useToaster } from 'contexts/toasterProvider';
 import Loading from 'components/Loading';
-import { withUrqlClient } from 'next-urql';
-import { urqlConfig } from 'graphql/urql';
+import { withApollo } from 'lib/apollo/withApollo';
+import { FetchResult } from '@apollo/client';
 
 type AuthResponse<T = undefined> = {
   user?: User;
@@ -53,10 +52,12 @@ export const useAuth = (): AuthContextInterface => useContext(AuthContext);
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const toast = useToaster();
   const [user, setUser] = React.useState<User>({} as User);
-  const [{ fetching: registerFetching }, registerMutation] = useRegisterMutation();
-  const [{ fetching: loginFetching }, loginMutation] = useLoginMutation();
-  const [{ fetching: logoutFetching }, logoutMutation] = useLogoutMutation();
-  const [{ fetching: myselfFetching, data: myselfData }, myselfQuery] = useMyselfQuery();
+
+  const { data: myselfData, loading: myselfFetching } = useMyselfQuery();
+  const [registerMutation, { loading: registerFetching }] = useRegisterMutation();
+  const [loginMutation, { loading: loginFetching }] = useLoginMutation();
+  const [logoutMutation, { loading: logoutFetching }] = useLogoutMutation();
+
   const [loading, setLoading] = React.useState({
     login: loginFetching,
     register: registerFetching,
@@ -65,7 +66,9 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   });
 
   React.useEffect(() => {
-    myselfQuery();
+    if (myselfData) {
+      toast.info('Welcome back ' + myselfData.myself.firstName);
+    }
   }, []);
 
   React.useEffect(() => {
@@ -87,11 +90,11 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [registerFetching, loginFetching, logoutFetching, myselfFetching]);
 
   const processMutationResponse = <T extends LoginInput | RegisterInput>(
-    response: OperationResult<LoginMutation | RegisterMutation>,
+    response: FetchResult<LoginMutation | RegisterMutation>,
     property: 'login' | 'register'
   ): AuthResponse<T> => {
-    if (response.error?.graphQLErrors) {
-      const { graphQLErrors } = response.error;
+    if (response.errors) {
+      const graphQLErrors = response.errors;
       const validation = extractValidationErrors(graphQLErrors);
       const errors = inputValidation<T>(validation);
       const message = extractMessageErrors(graphQLErrors);
@@ -99,7 +102,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } else {
       const user = response.data?.[property] as User;
       if (property === 'login') {
-        toast.info(`Welcome back, ${user.firstName}`);
+        toast.success(`Welcome back, ${user.firstName}`);
       } else if (property === 'register') {
         toast.success(`${user.firstName}, welcome on board!`);
       }
@@ -109,13 +112,14 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const register = async (input: RegisterInput): Promise<AuthResponse<RegisterInput>> => {
-    const response = await registerMutation(input);
+    //const response = await registerMutation(input);
+    const response = await registerMutation({ variables: input });
     console.log('response', response);
     return processMutationResponse<RegisterInput>(response, 'register');
   };
 
   const login = async (input: LoginInput): Promise<AuthResponse<LoginInput>> => {
-    const response = await loginMutation(input);
+    const response = await loginMutation({ variables: input });
     console.log('response', response);
     return processMutationResponse<LoginInput>(response, 'login');
   };
@@ -128,8 +132,8 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser({} as User);
       message = 'User logged out';
       toast.info(`See you next time, ${user.firstName}`);
-    } else if (response.error?.graphQLErrors) {
-      message = extractMessageErrors(response.error.graphQLErrors);
+    } else if (response.errors) {
+      message = extractMessageErrors(response.errors);
     }
     return { message };
   };
@@ -154,4 +158,4 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   );
 };
 
-export default withUrqlClient(urqlConfig)(AuthProvider);
+export default withApollo()(AuthProvider);

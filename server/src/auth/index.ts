@@ -3,6 +3,15 @@ import session from 'express-session';
 import connectRedis from 'connect-redis';
 import { Log } from '@logger';
 import { REDIS_URL } from '@config/constants';
+import { AuthChecker } from 'type-graphql';
+import { ApolloResolverContext, SessionRequest } from '@types';
+import DynamoWrapper from '@dynamodb/wrapper';
+import { User } from '@controller/user/model';
+
+export enum Role {
+  MEMBER = 'Member',
+  ADMIN = 'Admin',
+}
 
 export const RedisStore = connectRedis(session);
 export const client = redis.createClient({ url: REDIS_URL });
@@ -14,16 +23,17 @@ export const redisStore = new RedisStore({
   disableTTL: false,
 });
 
-/*
-export class Auth {
-  wrapper: ClientWrapper
+export const authChecker: AuthChecker<ApolloResolverContext> = ({ context }) => {
+  return !!context.user;
+};
 
-  constructor(wrapper: ClientWrapper) {
-    this.wrapper = wrapper;
+export const getSessionUser = async (
+  session: SessionRequest,
+  db: DynamoWrapper
+): Promise<User | null> => {
+  const { userId: id, userRange: range } = session;
+  if (!id || !range) {
+    return null;
   }
-
-  authUser(email: string, password: string) : boolean {
-
-  }
-}
-*/
+  return await db.get(User, { id, range });
+};

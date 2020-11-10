@@ -1,7 +1,6 @@
 import React from 'react';
-
-import { makeStyles, createStyles } from '@material-ui/core/styles';
 import { Backdrop, Box, CircularProgress } from '@material-ui/core';
+import { makeStyles, createStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -29,7 +28,7 @@ const useStyles = makeStyles((theme) =>
       position: 'relative',
       justifyContent: 'center',
       alignItems: 'center',
-      height: '100%',
+      //height: '100%',
       width: '100%',
       margin: theme.spacing(10, 0),
     },

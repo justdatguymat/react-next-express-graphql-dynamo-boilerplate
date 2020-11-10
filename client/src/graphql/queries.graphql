@@ -1,0 +1,54 @@
+query Myself {
+  myself {
+    ...UserFragment
+  }
+}
+
+query listPosts {
+  listPosts {
+    ...PostFragment
+  }
+}
+
+query listUsers {
+  listUsers {
+    ...UserFragment
+  }
+}
+
+query getPost($id: ID, $range: String, $data: String) {
+  getPost (
+    id: $id
+    range: $range
+    data: $data
+  ) {
+    ...PostFragment
+    author {
+      ...UserFragment
+    }
+  }
+}
+
+query getUser($id: ID, $range: String, $data: String) {
+  getUser (
+    id: $id
+    range: $range
+    data: $data
+  ) {
+    ...UserFragment
+  }
+}
+
+
+query getUserPosts($userId: String!, $lastKey: PostInput) {
+  getUserPosts( 
+    userId: $userId
+    lastKey: $lastKey
+  ) {
+    ...PostFragment
+    author {
+      ...UserFragment
+    }
+  }
+}
+

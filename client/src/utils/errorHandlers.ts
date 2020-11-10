@@ -12,7 +12,9 @@ export function inputValidation<T>(errors: ValidationError[]): T {
   return errors.reduce<T>(reducer, {} as T);
 }
 
-export function extractValidationErrors(graphQLErrors: GraphQLError[]): ValidationError[] {
+export function extractValidationErrors(
+  graphQLErrors: Readonly<GraphQLError[]>
+): ValidationError[] {
   const reducer = (accumulate: ValidationError[], current: GraphQLError): ValidationError[] => {
     if (current.message === 'Argument Validation Error') {
       return accumulate.concat(current.extensions?.exception.validationErrors);
@@ -32,7 +34,7 @@ export function extractCustomError(graphQLErrors: GraphQLError[], code: ErrorCod
   return error;
 }
 
-export function extractMessageErrors(graphQLErrors: GraphQLError[]): string {
+export function extractMessageErrors(graphQLErrors: Readonly<GraphQLError[]>): string {
   const codes = ['USER_NOT_FOUND', 'WRONG_PASSWORD', 'UNAUTHENTICATED', 'USER_ALREADY_EXIST'];
 
   const reducer = (accumulate: string, current: GraphQLError) => {

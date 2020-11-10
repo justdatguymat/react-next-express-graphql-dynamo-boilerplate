@@ -3,6 +3,7 @@ import { DataMapper, QueryOptions } from '@aws/dynamodb-data-mapper';
 import { ModelBaseType } from '@controller/base/model';
 import { Log } from '@logger';
 import { GSI, LSI } from '@config/tableSchema';
+import { sleep } from '@utils';
 
 interface GetItemOptions {
   id?: string;
@@ -17,7 +18,7 @@ const defaultQueryOptions: QueryOptions = {
   pageSize: 10,
 };
 
-class ClientWrapper {
+class DynamoWrapper {
   mapper: DataMapper;
 
   constructor(mapper: DataMapper) {
@@ -31,20 +32,24 @@ class ClientWrapper {
 
   private async getById<T>(Model: ModelBaseType<T>, id: string): Promise<T | null> {
     const indexName = LSI.IdType;
-    const type = Model.__type__;
-    const attr = { id, type };
-    return (await this.mapper.query(Model, attr, { indexName, limit: 1 }).next()).value;
+    const attr = { id, type: Model.__type__ };
+    const result = this.mapper.query<T>(Model, attr, { indexName, limit: 1 });
+    return (await result.next()).value;
   }
 
   async get<T>(Model: ModelBaseType<T>, keys: GetItemOptions): Promise<T | null> {
     const { id, range, data } = keys;
     console.log('QUERY GET', Model.__type__, keys);
+    await sleep(1500);
     try {
       if (id && range) {
+        // get by keys ID RANGE
         return await this.mapper.get(Object.assign(new Model(), { id, range }));
       } else if (id) {
+        // get by ID using ID-TYPE-LOCAL index
         return await this.getById<T>(Model, id);
       } else if (range && data) {
+        // get by RANGE DATA using RANGE-DATA-GLOBAL index
         return await this.getByData<T>(Model, { range, data });
       } else {
         return null;
@@ -69,6 +74,7 @@ class ClientWrapper {
     for await (const page of pagination) {
       items = items.concat(page);
     }
+    await sleep(1500);
     return items;
   }
 
@@ -98,12 +104,14 @@ class ClientWrapper {
     for await (const item of iterator) {
       items.push(item);
     }
+    await sleep(1500);
     return items;
   }
 
   async create<T>(item: T): Promise<T | null> {
     try {
       item = await this.mapper.put(item);
+      await sleep(1500);
       return item;
     } catch (error) {
       Log.error('Failed to create', error);
@@ -114,6 +122,7 @@ class ClientWrapper {
   async update<T>(item: T): Promise<T | null> {
     try {
       item = await this.mapper.update(item, { onMissing: 'skip' });
+      await sleep(1500);
       return item;
     } catch (error) {
       return null;
@@ -128,11 +137,12 @@ class ClientWrapper {
         // operation failed
         return null;
       }
-      return item;
+      await sleep(1500);
+      return deleted;
     } catch (error) {
       return null;
     }
   }
 }
 
-export default ClientWrapper;
+export default DynamoWrapper;

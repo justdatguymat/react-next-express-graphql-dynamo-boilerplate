@@ -2,7 +2,7 @@ import AWS, { DynamoDB } from 'aws-sdk';
 import { CreateTableInput } from 'aws-sdk/clients/dynamodb';
 import { DataMapper } from '@aws/dynamodb-data-mapper';
 import { TableCreator } from './table';
-import ClientWrapper from './wrapper';
+import DynamoWrapper from './wrapper';
 import { logStream } from '@logger';
 import { PROD } from '@config/constants';
 /*
@@ -13,7 +13,7 @@ import { sleep } from '@utils';
 
 export let mapper: DataMapper;
 export let client: DynamoDB;
-export let wrapper: ClientWrapper;
+export let wrapper: DynamoWrapper;
 
 type DynamoTableParams = {
   table: string;
@@ -25,7 +25,7 @@ type DynamoClientParams = {
   region: string;
 };
 
-type DynamoTuple = [DynamoDB, DataMapper, ClientWrapper];
+type DynamoTuple = [DynamoDB, DataMapper, DynamoWrapper];
 
 export function createDynamoTable(options: DynamoClientParams & DynamoTableParams): void {
   const { endpoint, region, table, schema } = options;
@@ -38,7 +38,7 @@ export function createDynamoTable(options: DynamoClientParams & DynamoTableParam
   TableCreator.create(client, table, schema);
   /*
   mapper = new DataMapper({ client });
-  wrapper = new ClientWrapper(mapper);
+  wrapper = new DynamoWrapper(mapper);
   for (let index = 0; index < mockdata.length; index++) {
     const element = mockdata[index];
     const post = Object.assign(new Post(), element);
@@ -58,7 +58,7 @@ export function initDynamoClient(config: DynamoClientParams): DynamoTuple {
     sslEnabled: PROD,
   });
   mapper = new DataMapper({ client });
-  wrapper = new ClientWrapper(mapper);
+  wrapper = new DynamoWrapper(mapper);
 
   return [client, mapper, wrapper];
 }

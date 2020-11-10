@@ -4,6 +4,7 @@ import { BaseRecord, ModelTypes } from '@controller/base/model';
 import { Post } from '@controller/post/model';
 import { hashKeyOptions, rangeKeyOptions, typeKeyOptions } from '@controller/options';
 import { Field, ID, ObjectType } from 'type-graphql';
+import { Role } from '@auth';
 
 @ObjectType('User')
 @table(DYNAMO_TABLE)
@@ -15,12 +16,16 @@ export class User extends BaseRecord {
   id: string;
 
   @Field(() => String)
-  @hashKey(rangeKeyOptions('profile'))
+  @hashKey(rangeKeyOptions(User.__type__))
   range: string;
 
   @Field(() => String)
   @attribute(typeKeyOptions(User.__type__))
   type: string;
+
+  @Field(() => String)
+  @attribute({ defaultProvider: () => Role.MEMBER })
+  role: string;
 
   @Field(() => String)
   @attribute()

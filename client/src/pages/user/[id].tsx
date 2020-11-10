@@ -1,93 +1,93 @@
 import React from 'react';
-import Head from 'next/head';
 import { Button, Container, Typography } from '@material-ui/core';
 import { useAuth } from 'contexts/authProvider';
-import Main from 'components/Main';
 import { useRouter } from 'next/dist/client/router';
-import { withUrqlClient } from 'next-urql';
-import { urqlConfig } from 'graphql/urql';
-import PostForm from 'components/PostForm';
 import PostFeed from 'components/PostFeed';
-import { useGetUserQuery, User } from 'generated/graphql';
+import Layout from 'components/Layout';
+import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
+import { User } from 'codegen/graphql-request';
+import { SDK } from 'lib/graphql-request';
+import { ParsedUrlQuery } from 'querystring';
 import Loading from 'components/Loading';
+import ErrorPage from 'pages/_error';
 
-interface UserProps {}
+type UserProfileParams = ParsedUrlQuery & { id: string };
+type UserProfileProps = {
+  user: User | null;
+};
 
-const UserProfile: React.FC<UserProps> = () => {
+const UserProfile: NextPage<UserProfileProps> = ({ user }) => {
   const router = useRouter();
   const { user: authUser } = useAuth();
-  const { id } = router.query;
-  const [userId, setUserId] = React.useState<string>(id as string);
-  const [user, setUser] = React.useState<User>({} as User);
 
-  if (authUser.id === userId) {
-    //router.push('/user', { href: 'profile' });
-  }
-
-  const [variables, setVariables] = React.useState({
-    id: userId,
-    range: 'profile',
-  });
-
-  const [{ data, error, fetching }] = useGetUserQuery({ variables });
-
-  React.useEffect(() => {
-    setVariables({
-      id: userId,
-      range: 'profile',
-    });
-  }, [userId]);
-
-  React.useEffect(() => {
-    setUserId(id as string);
-  }, [id]);
-
-  React.useEffect(() => {
-    setUser(data?.getUser as User);
-  }, [data]);
-
-  if (error) {
-    console.error(error);
-    return <Typography> Failed to load the user profile</Typography>;
-  }
-
-  if (fetching) {
-    return <Loading backdrop />;
+  console.log('router.isFallback', router.isFallback);
+  if (router.isFallback) {
+    return <Loading backdrop size={50} />;
   }
 
   if (!user) {
-    return <Typography>still nada </Typography>;
+    return <ErrorPage statusCode={404} />;
   }
+
+  if (authUser.id === user.id) {
+    router.push('/profile');
+  }
+
   const fullName = `${user.firstName} ${user.lastName}`;
 
   return (
-    <>
-      <Head>
-        <title>{fullName} | Profile</title>
-      </Head>
-      <Main>
-        <Container maxWidth="xs">
-          <>
-            <Typography align="center" variant="h3" color="textSecondary">
-              Profile
-            </Typography>
-            <Typography align="center" variant="h6" color="textSecondary"></Typography>
-            <Button
-              fullWidth
-              variant="text"
-              color="primary"
-              onClick={() => router.push('/')}
-              size="small"
-            >
-              Home
-            </Button>
-            <PostFeed user={userId} />
-            <PostForm />
-          </>
-        </Container>
-      </Main>
-    </>
+    <Layout title={`${fullName} | Profile`}>
+      <Container maxWidth="md">
+        <Typography align="center" variant="h3" color="textSecondary">
+          Profile
+        </Typography>
+        <Typography align="center" variant="h6" color="textSecondary">
+          {fullName}
+        </Typography>
+        <Button
+          fullWidth
+          variant="text"
+          color="primary"
+          onClick={() => router.push('/')}
+          size="small"
+        >
+          Home
+        </Button>
+        <PostFeed userId={user.id} />
+      </Container>
+    </Layout>
   );
 };
 
-export default withUrqlClient(urqlConfig, { ssr: false })(UserProfile);
+export const getStaticPaths: GetStaticPaths = async () => {
+  try {
+    const sdk = SDK();
+    const { listUsers } = await sdk.listUsers();
+    const paths = listUsers.map((user) => ({ params: { id: user.id } }));
+    return { paths, fallback: true };
+  } catch (error) {
+    console.error('Failed to obtain list of users', error);
+    return { paths: [], fallback: true };
+  }
+};
+
+export const getStaticProps: GetStaticProps<UserProfileProps, UserProfileParams> = async (
+  context
+) => {
+  let user: User | null = null;
+  try {
+    if (!context.params) {
+      throw new Error('Missing params');
+    }
+    const { id } = context.params;
+    const sdk = SDK();
+    const { getUser } = await sdk.getUser({ id });
+    user = getUser as User;
+  } catch (error) {
+    console.info('Failed to fetch the user ', error);
+  }
+
+  return { props: { user: user }, revalidate: 10 };
+};
+
+export default UserProfile;

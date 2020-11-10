@@ -1,62 +1,57 @@
-import { Typography } from '@material-ui/core';
-import { Post, PostInput, useGetUserPostsQuery } from 'generated/graphql';
-import useVisibility from 'hooks/useVisibility';
 import React from 'react';
-import Loading from './Loading';
-import PostCard from './PostCard';
-
+import { Post, useGetUserPostsQuery } from 'codegen/graphql-apollo';
+import useVisibility from 'hooks/useVisibility';
+import { GrowAlert } from './Alert';
+import PostCard, { PostCardSkeleton } from './PostCard';
+import { Box } from '@material-ui/core';
 type PostFeedProps = {
-  user: string;
+  userId?: string;
 };
 
-type VariablesType = {
-  user: string;
-  lastKey?: PostInput | undefined | null;
-};
-
-const PostFeed: React.FC<PostFeedProps> = ({ user = '' }) => {
+const PostFeed: React.FC<PostFeedProps> = ({ userId = '' }) => {
   const [posts, setPosts] = React.useState<Post[]>([]);
-  const [variables, setVariables] = React.useState<VariablesType>({ user });
-  const [{ data, error, fetching }] = useGetUserPostsQuery({ variables });
-  const [isVisible, currentElement] = useVisibility<HTMLDivElement>(-100);
-
-  const getPosts = () => {
-    if (posts.length > 0) {
-      const last = posts[posts.length - 1];
-      const { id, range, data } = last;
-      const newVariables: VariablesType = { user, lastKey: { id, range, data } };
-      setVariables(newVariables);
-    }
-  };
+  const [isVisible, ref] = useVisibility<HTMLDivElement>();
+  const [variables, setVariables] = React.useState({ userId });
+  const { data, error, loading } = useGetUserPostsQuery({ variables });
 
   React.useEffect(() => {
-    if (isVisible) {
-      getPosts();
+    if (isVisible && posts.length > 0) {
+      const { id, range, data } = posts[posts.length - 1];
+      const lastKey = { id, range, data };
+      const variables = { userId, lastKey };
+      console.log('vars', variables);
+      setVariables(variables);
     }
   }, [isVisible]);
 
   React.useEffect(() => {
-    if (error) {
-      console.error('Failed to load posts.', error);
-    }
-  }, [error]);
-
-  React.useEffect(() => {
-    console.log('data changed, setting posts', data);
     if (data) {
       setPosts(posts.concat(data.getUserPosts as Post[]));
+    } else if (error) {
+      console.error('Failed to load posts.', error);
     }
-  }, [data]);
+  }, [data, error]);
 
   return (
-    <>
-      {error && <Typography>Failed to load posts...</Typography>}
+    <Box minWidth="100%">
       {posts.map((post) => (
         <PostCard key={post.id} post={post} />
       ))}
-      {fetching && <Loading embedded size={70} />}
-      <div ref={currentElement} />
-    </>
+      {error && (
+        <GrowAlert active={!!error} severity="error">
+          Failed to load posts
+        </GrowAlert>
+      )}
+      {loading && (
+        <Box width="100%">
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+          <PostCardSkeleton />
+        </Box>
+      )}
+      <div ref={ref} />
+    </Box>
   );
 };
 

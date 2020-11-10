@@ -3,8 +3,11 @@
   "schema": "http://express-server:9001/graphql",
   "documents": "src/graphql/**/*.graphql",
   "generates": {
-    "src/generated/graphql.ts": {
-      "plugins": ["typescript", "typescript-operations", "typescript-urql"]
+    "src/codegen/graphql-apollo.ts": {
+      "plugins": ["typescript", "typescript-operations", "typescript-react-apollo"]
+    },
+    "src/codegen/graphql-request.ts": {
+      "plugins": ["typescript", "typescript-operations", "typescript-graphql-request"]
     }
   }
 }

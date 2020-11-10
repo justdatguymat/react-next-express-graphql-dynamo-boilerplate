@@ -6,9 +6,9 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "lib": ["es6", "dom", "esnext.asynciterable"],
-    "module": "esnext",
-    "moduleResolution": "node",
+    "lib": ["ES6", "DOM", "ESNext.AsyncIterable"],
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "noEmit": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
@@ -24,16 +24,8 @@
     "strictFunctionTypes": true,
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true,
-    "target": "es5"
+    "target": "ES5"
   },
-  "exclude": [
-    "node_modules",
-    "build",
-    "scripts",
-    "acceptance-tests",
-    "webpack",
-    "jest",
-    "src/setupTests.ts"
-  ],
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"]
+  "exclude": ["node_modules", "build"],
+  "include": ["**/*.ts", "**/*.tsx"]
 }

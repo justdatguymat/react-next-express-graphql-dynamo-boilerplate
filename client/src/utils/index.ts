@@ -43,3 +43,7 @@ export function getHeightPercentile(): number {
   const { offsetHeight } = document.body;
   return (innerHeight + pageYOffset) / offsetHeight;
 }
+
+export function getRandom(min = 0, max = 100): number {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}

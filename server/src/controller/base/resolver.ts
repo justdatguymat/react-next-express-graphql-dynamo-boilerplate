@@ -1,7 +1,7 @@
 import { OperationError } from '@controller/errors';
 import { ApolloResolverContext } from '@types';
-import { capitalizeFirstChar, sleep } from '@utils';
-import { Arg, Args, Ctx, Mutation, Query, Resolver } from 'type-graphql';
+import { capitalizeFirstChar } from '@utils';
+import { Arg, Args, Authorized, Ctx, Mutation, Query, Resolver } from 'type-graphql';
 import { KeyArgs } from './input';
 import { BaseRecord, ModelBaseType } from './model';
 /*
@@ -35,7 +35,6 @@ export function crudResolverFactory<T extends BaseRecord, I>(
       if (!item) {
         throw new OperationError(`${name} not found`);
       }
-      await sleep(1000);
       return item;
     }
 
@@ -58,7 +57,6 @@ export function crudResolverFactory<T extends BaseRecord, I>(
       if (!item) {
         throw new OperationError(`${name} not created`);
       }
-      await sleep(1000);
       return item;
     }
 
@@ -74,10 +72,10 @@ export function crudResolverFactory<T extends BaseRecord, I>(
       if (!item) {
         throw new OperationError(`${name} not updated`);
       }
-      await sleep(1000);
       return item;
     }
 
+    @Authorized()
     @Mutation(() => ModelClass, { name: `delete${name}` })
     async delete(
       @Ctx() { db }: ApolloResolverContext,
@@ -87,7 +85,6 @@ export function crudResolverFactory<T extends BaseRecord, I>(
       if (!item) {
         throw new OperationError(`${name} not deleted`);
       }
-      await sleep(1000);
       return item;
     }
   }

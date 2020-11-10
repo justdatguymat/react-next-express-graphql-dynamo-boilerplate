@@ -1,9 +1,0 @@
-query getUserPosts($user: String!, $lastKey: PostInput) {
-  getUserPosts( 
-    user: $user
-    lastKey: $lastKey
-  ) {
-    ...PostFragment
-  }
-}
-

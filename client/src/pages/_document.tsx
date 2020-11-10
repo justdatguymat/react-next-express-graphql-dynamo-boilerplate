@@ -21,10 +21,11 @@ class Document extends NextDocument {
       ctx.renderPage = () =>
         originalRenderPage({
           enhanceApp: (App) => (props) =>
-            //styledComponentSheet.collectStyles(materialUiSheets.collect(<App {...props} />)),
-            //{styledComponentSheet.getStyleElement()}
-            materialUiSheets.collect(<App {...props} />),
+            styledComponentSheet.collectStyles(materialUiSheets.collect(<App {...props} />)),
+          //{styledComponentSheet.getStyleElement()}
+          //materialUiSheets.collect(<App {...props} />),
         });
+
       const initialProps = await NextDocument.getInitialProps(ctx);
       return {
         ...initialProps,
@@ -44,11 +45,6 @@ class Document extends NextDocument {
     return (
       <Html lang="en">
         <Head>
-          <meta charSet="utf-8" />
-          <meta
-            name="viewport"
-            content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"
-          />
           <meta name="theme-color" content={theme.palette.primary.main} />
           <link
             href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap"

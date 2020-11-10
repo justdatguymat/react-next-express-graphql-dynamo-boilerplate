@@ -1,0 +1,19 @@
+fragment UserFragment on User {
+  id
+  range
+  createdAt
+  updatedAt
+  firstName
+  lastName
+}
+
+fragment PostFragment on Post {
+  id
+  range
+  data
+  createdAt
+  updatedAt
+  title
+  content
+}
+

@@ -1,98 +1,94 @@
 import React from 'react';
-import { Paper, Box, Typography, Container } from '@material-ui/core';
-import { GetPostQuery, GetPostQueryVariables, ListPostsQuery, Post } from 'generated/graphql';
+import { Paper, Typography, Container } from '@material-ui/core';
 import { GetStaticPaths, GetStaticProps } from 'next';
+import Link from 'next/link';
 import { ParsedUrlQuery } from 'querystring';
-import { request, gql } from 'graphql-request';
-//import { GRAPHQL_ENDPOINT } from 'config';
-const GRAPHQL_ENDPOINT = 'http://express-server:9001/graphql';
+import Layout from 'components/Layout';
+import { makeStyles, createStyles } from '@material-ui/core/styles';
+import { SDK } from 'lib/graphql-request';
+import { Post } from 'codegen/graphql-request';
+import Loading from 'components/Loading';
+import { useRouter } from 'next/dist/client/router';
+import ErrorPage from 'pages/_error';
+
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    postRoot: {
+      width: '100%',
+      padding: theme.spacing(3),
+    },
+    post: {
+      margin: theme.spacing(2, 0),
+    },
+    card: {},
+  })
+);
 
 type PostParams = ParsedUrlQuery & { id: string };
 type PostProps = {
-  post: Post;
-};
-
-export const getAllPosts = async (): Promise<ListPostsQuery> => {
-  const query = gql`
-    query {
-      listPosts {
-        id
-      }
-    }
-  `;
-
-  try {
-    //const response = await request<Post[]>(GRAPHQL_ENDPOINT, query);
-    return await request<ListPostsQuery>(GRAPHQL_ENDPOINT, query);
-  } catch (error) {
-    console.error(error);
-    throw new Error(error);
-  }
-};
-
-export const getPost = async (id: string): Promise<GetPostQuery> => {
-  const query = gql`
-    query getPost($id: ID) {
-      getPost(id: $id) {
-        id
-        range
-        title
-        content
-        data
-        createdAt
-        updatedAt
-      }
-    }
-  `;
-
-  try {
-    return await request<GetPostQuery, GetPostQueryVariables>(GRAPHQL_ENDPOINT, query, { id });
-  } catch (error) {
-    console.error(error);
-    throw new Error(error);
-  }
-};
-
-export const getStaticPaths: GetStaticPaths = async () => {
-  const posts = (await getAllPosts()).listPosts;
-  const paths = posts.map((post) => ({ params: { id: post.id } }));
-  return {
-    paths,
-    fallback: true,
-  };
-};
-
-export const getStaticProps: GetStaticProps<PostProps, PostParams> = async (context) => {
-  if (!context.params) {
-    throw new Error('Failed to fetch the post, missing params');
-  }
-  const { id } = context.params;
-  const post = (await getPost(id)).getPost as Post;
-
-  if (!post) {
-    throw new Error('Failed to fetch the post ' + id);
-  }
-  console.log('post', post);
-  return { props: { post }, unstable_revalidate: true };
+  post: Post | null;
 };
 
 const PostPage: React.FC<PostProps> = ({ post }) => {
-  //const router = useRouter();
-  //const { id } = router.query;
-  //const [postId] = React.useState(id as string);
-  //const [] = usePostQuery({ variables });
+  const classes = useStyles();
+  const router = useRouter();
+
+  console.log('router.isFallback', router.isFallback);
+  if (router.isFallback) {
+    return <Loading backdrop size={50} />;
+  }
+
+  if (!post) {
+    return <ErrorPage statusCode={404} />;
+  }
+
   const createdAt = new Date(post.createdAt).toLocaleString();
+  const author = `${post.author.firstName} ${post.author.lastName}`;
+
   return (
-    <Container maxWidth="sm">
-      <Paper>
-        <Box my={2} p={2}>
+    <Layout title={post.title}>
+      <Container maxWidth="md">
+        <Paper className={classes.postRoot}>
           <Typography variant="h5">{post.title}</Typography>
-          <Typography variant="subtitle1">{createdAt}</Typography>
-          <Typography style={{ whiteSpace: 'pre-line' }}>{post.content}</Typography>
-        </Box>
-      </Paper>
-    </Container>
+          <Typography variant="subtitle1">
+            <Link href={`/user/${post.author.id}`}>{author}</Link>
+          </Typography>
+          <Typography variant="subtitle2">{createdAt}</Typography>
+          <div className={classes.post}>
+            <Typography style={{ whiteSpace: 'pre-line' }}>{post.content}</Typography>
+          </div>
+        </Paper>
+      </Container>
+    </Layout>
   );
+};
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  try {
+    const sdk = SDK();
+    const { listPosts } = await sdk.listPosts();
+    const paths = listPosts.map((post) => ({ params: { id: post.id } }));
+    return { paths, fallback: true };
+  } catch (error) {
+    console.error('Failed to obtain list of posts', error);
+    return { paths: [], fallback: true };
+  }
+};
+
+export const getStaticProps: GetStaticProps<PostProps, PostParams> = async (context) => {
+  let post: Post | null = null;
+  try {
+    if (!context.params) {
+      throw new Error('Missing params');
+    }
+    const { id } = context.params;
+    const sdk = SDK();
+    const { getPost } = await sdk.getPost({ id });
+    post = getPost as Post;
+  } catch (error) {
+    console.error('Failed to fetch the post', error);
+  }
+  return { props: { post: post }, revalidate: 10 };
 };
 
 export default PostPage;

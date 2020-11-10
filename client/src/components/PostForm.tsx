@@ -1,7 +1,7 @@
+import React from 'react';
 import { Box, Grid, TextField, useTheme } from '@material-ui/core';
 import { useToaster } from 'contexts/toasterProvider';
-import { useCreatePostMutation } from 'generated/graphql';
-import React from 'react';
+import { useCreatePostMutation } from 'codegen/graphql-apollo';
 import { GrowAlert } from './Alert';
 import LoadingButton from './LoadingButton';
 
@@ -20,7 +20,7 @@ const PostForm: React.FC<PostFormProps> = ({ initValues = {} as PostForm }) => {
   const [message, setMessage] = React.useState('');
   const [form, setForm] = React.useState(initValues);
   const [formErrors] = React.useState(initValues);
-  const [{ fetching }, createPost] = useCreatePostMutation();
+  const [createPost, { loading }] = useCreatePostMutation();
 
   const { title, content } = form;
 
@@ -31,16 +31,17 @@ const PostForm: React.FC<PostFormProps> = ({ initValues = {} as PostForm }) => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const response = await createPost(form);
+    const response = await createPost({ variables: form });
     console.log('createPost response', response);
 
-    if (response.error?.message) {
-      setMessage(response.error?.message);
+    if (response.errors) {
+      setMessage(response.errors[0].message);
     } else {
       setMessage('');
     }
     if (response.data?.createPost) {
       toast.success('Post created');
+      setForm(initValues);
     } else {
       setMessage('Something went wrong, try again');
     }
@@ -48,11 +49,6 @@ const PostForm: React.FC<PostFormProps> = ({ initValues = {} as PostForm }) => {
 
   return (
     <form>
-      {/*
-      <Typography align="center" variant="h5">
-        Create a new post
-      </Typography>
-         */}
       {message && (
         <GrowAlert active={!!message} severity="error">
           {message}
@@ -103,7 +99,7 @@ const PostForm: React.FC<PostFormProps> = ({ initValues = {} as PostForm }) => {
                 size="small"
                 type="submit"
                 onClick={handleSubmit}
-                loading={fetching}
+                loading={loading}
               >
                 Create a post
               </LoadingButton>

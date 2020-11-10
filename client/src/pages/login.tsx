@@ -1,14 +1,16 @@
 import React from 'react';
 import { Button, Container, Grid, Typography, useTheme } from '@material-ui/core';
 import { useRouter } from 'next/dist/client/router';
-import Head from 'next/head';
-import Main from 'components/Main';
 import TextFieldWithIcon from 'components/TextFieldWithIcon';
 import { AccountCircle, Lock, Person } from '@material-ui/icons';
 import { testEmail } from 'utils';
 import { useAuth } from 'contexts/authProvider';
 import { GrowAlert } from 'components/Alert';
 import LoadingButton from 'components/LoadingButton';
+import Layout from 'components/Layout';
+import { withApollo } from 'lib/apollo/withApollo';
+import { NextPage } from 'next';
+import { LoginInput } from 'codegen/graphql-apollo';
 
 type LoginForm = {
   email: string;
@@ -16,10 +18,10 @@ type LoginForm = {
 };
 
 interface LoginProps {
-  initValues: LoginForm;
+  initValues: LoginInput;
 }
 
-const Login: React.FC<LoginProps> = ({ initValues = {} as LoginForm }) => {
+const Login: NextPage<LoginProps, LoginProps> = ({ initValues = {} as LoginProps }) => {
   const theme = useTheme();
   const router = useRouter();
   const { login, loading } = useAuth();
@@ -48,6 +50,7 @@ const Login: React.FC<LoginProps> = ({ initValues = {} as LoginForm }) => {
       if (response.errors) {
         setFormErrors(response.errors);
       } else if (response.user) {
+        console.log('ROUTER PUSH', router.query);
         router.push(`/user/${response.user.id}`);
       } else {
         setMessage('Something went wrong, try again');
@@ -68,77 +71,72 @@ const Login: React.FC<LoginProps> = ({ initValues = {} as LoginForm }) => {
   };
 
   return (
-    <>
-      <Head>
-        <title>Login</title>
-      </Head>
-      <Main>
-        <Container maxWidth="xs">
-          <Typography align="center" variant="h6">
-            <AccountCircle fontSize="large" color="primary" style={{ fontSize: '7em' }} />
-          </Typography>
-          {message && (
-            <GrowAlert active={!!message} severity="error">
-              {message}
-            </GrowAlert>
-          )}
-          <form onSubmit={handleSubmit}>
-            <TextFieldWithIcon
-              required
-              fullWidth
-              id="email"
-              name="email"
-              label="Email"
-              icon={<Person fontSize="large" />}
-              value={email ? email : ''}
-              onChange={handleChange}
-              autoComplete="email"
-              error={!!formErrors.email}
-              helperText={formErrors.email}
-            />
-            <TextFieldWithIcon
-              required
-              password
-              fullWidth
-              id="password"
-              name="password"
-              label="Password"
-              icon={<Lock fontSize="large" />}
-              value={password ? password : ''}
-              onChange={handleChange}
-              autoComplete="current=password"
-              error={!!formErrors.password}
-              helperText={formErrors.password}
-            />
+    <Layout title="Login &">
+      <Container maxWidth="xs">
+        <Typography align="center" variant="h6">
+          <AccountCircle fontSize="large" color="primary" style={{ fontSize: '7em' }} />
+        </Typography>
+        {message && (
+          <GrowAlert active={!!message} severity="error">
+            {message}
+          </GrowAlert>
+        )}
+        <form onSubmit={handleSubmit}>
+          <TextFieldWithIcon
+            required
+            fullWidth
+            id="email"
+            name="email"
+            label="Email"
+            icon={<Person fontSize="large" />}
+            value={email ? email : ''}
+            onChange={handleChange}
+            autoComplete="email"
+            error={!!formErrors.email}
+            helperText={formErrors.email}
+          />
+          <TextFieldWithIcon
+            required
+            password
+            fullWidth
+            id="password"
+            name="password"
+            label="Password"
+            icon={<Lock fontSize="large" />}
+            value={password ? password : ''}
+            onChange={handleChange}
+            autoComplete="current=password"
+            error={!!formErrors.password}
+            helperText={formErrors.password}
+          />
 
-            <Grid container spacing={1} justify="space-between">
-              <Grid item xs={4}>
-                <Button
-                  variant={theme.buttonVariant.secondary}
-                  fullWidth
-                  color="primary"
-                  onClick={() => router.push('/register')}
-                >
-                  Register
-                </Button>
-              </Grid>
-              <Grid item xs={8}>
-                <LoadingButton
-                  fullWidth
-                  type="submit"
-                  color="primary"
-                  variant={theme.buttonVariant.primary}
-                  loading={loading.login}
-                >
-                  Login
-                </LoadingButton>
-              </Grid>
+          <Grid container spacing={1} justify="space-between">
+            <Grid item xs={4}>
+              <Button
+                variant={theme.buttonVariant.secondary}
+                fullWidth
+                color="primary"
+                onClick={() => router.push('/register')}
+              >
+                Register
+              </Button>
             </Grid>
-          </form>
-        </Container>
-      </Main>
-    </>
+            <Grid item xs={8}>
+              <LoadingButton
+                fullWidth
+                type="submit"
+                color="primary"
+                variant={theme.buttonVariant.primary}
+                loading={loading.login}
+              >
+                Login
+              </LoadingButton>
+            </Grid>
+          </Grid>
+        </form>
+      </Container>
+    </Layout>
   );
 };
 
-export default Login;
+export default withApollo<LoginProps>({ ssr: false })(Login);

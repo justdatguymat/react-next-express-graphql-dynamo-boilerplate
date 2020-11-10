@@ -1,5 +1,0 @@
-query Myself {
-  myself {
-    ...UserFragment
-  }
-}

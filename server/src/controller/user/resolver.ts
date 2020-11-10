@@ -6,7 +6,7 @@ import { Log } from '@logger';
 import { ApolloResolverContext } from '@types';
 import { AuthenticationError } from 'apollo-server-express';
 import bcrypt from 'bcrypt';
-import { Arg, Ctx, FieldResolver, Mutation, Query, Resolver, Root } from 'type-graphql';
+import { Arg, Authorized, Ctx, FieldResolver, Mutation, Query, Resolver, Root } from 'type-graphql';
 import { LoginInput, RegisterInput, UserInput } from './input';
 import { User } from './model';
 
@@ -22,18 +22,12 @@ export class UserResolver extends UserResolverBase {
     return userPosts;
   }
 
+  @Authorized()
   @Query(() => User)
-  async myself(@Ctx() { db, req }: ApolloResolverContext): Promise<User> {
-    const { userId: id, userRange: range } = req.session;
-    if (!id || !range) {
+  async myself(@Ctx() { user }: ApolloResolverContext): Promise<User> {
+    if (!user) {
       throw new AuthenticationError('You must be logged in');
     }
-
-    const user = await db.get<User>(User, { id, range });
-    if (!user) {
-      throw new OperationError('User not found');
-    }
-
     return user;
   }
 
@@ -43,7 +37,7 @@ export class UserResolver extends UserResolverBase {
     @Ctx() { db, req }: ApolloResolverContext
   ): Promise<User> {
     const { email: data } = input;
-    let user = await db.get<User>(User, { data, range: 'profile' });
+    let user = await db.get<User>(User, { data, range: User.__type__ });
 
     if (user) {
       throw new UserAlreadyExistError();
@@ -70,7 +64,7 @@ export class UserResolver extends UserResolverBase {
     @Ctx() { db, req }: ApolloResolverContext
   ): Promise<User> {
     const { email: data } = input;
-    const user = await db.get<User>(User, { data, range: '' });
+    const user = await db.get<User>(User, { data, range: 'User' });
 
     if (!user) {
       throw new OperationError('User not found');
@@ -87,6 +81,7 @@ export class UserResolver extends UserResolverBase {
     return user;
   }
 
+  @Authorized()
   @Mutation(() => Boolean)
   async logout(@Ctx() { req, res }: ApolloResolverContext): Promise<boolean> {
     res.clearCookie(COOKIE_NAME);

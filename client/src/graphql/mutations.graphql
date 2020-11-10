@@ -1,0 +1,72 @@
+mutation Register($firstName: String!, $lastName: String!, $email: String!, $password: String! ){
+  register(
+    input: {
+      firstName: $firstName
+      lastName: $lastName
+      email: $email
+      password: $password
+    }
+  ) {
+    ...UserFragment
+  }
+}
+
+mutation Login($email: String!, $password: String!) {
+  login(input: { email: $email, password: $password }) {
+    ...UserFragment
+  }
+}
+
+mutation Logout {
+  logout
+}
+
+mutation UpdateUser($id: ID, $range: String, $data: String, $firstName: String, $lastName: String) {
+  updateUser(
+    id: $id
+    range: $range
+    data: $data
+    input: {
+      firstName: $firstName
+      lastName: $lastName
+    }
+  ) {
+    ...UserFragment
+  }
+}
+
+mutation CreatePost($title: String!, $content: String!) {
+  createPost(
+    input: {
+      title: $title
+      content: $content
+    }
+  ) {
+    ...PostFragment
+  }
+}
+
+mutation UpdatePost($id: ID, $range: String, $data: String, $title: String, $content: String) {
+  updatePost(
+    id: $id
+    range: $range
+    data: $data
+    input: {
+      title: $title
+      content: $content
+    }
+  ) {
+    ...PostFragment
+  }
+}
+
+mutation DeletePost($id: ID, $range: String, $data: String) {
+  deletePost(
+    id: $id
+    range: $range
+    data: $data
+  ) {
+    ...PostFragment
+  }
+}
+
