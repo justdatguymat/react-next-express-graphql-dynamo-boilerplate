@@ -21,7 +21,7 @@ interface LoginProps {
   initValues: LoginInput;
 }
 
-const Login: NextPage<LoginProps, LoginProps> = ({ initValues = {} as LoginProps }) => {
+const Login: NextPage<LoginProps, LoginProps> = ({ initValues = {} as LoginForm }) => {
   const theme = useTheme();
   const router = useRouter();
   const { login, loading } = useAuth();

@@ -5,8 +5,9 @@ import { DEFAULT_SEO, SEOType, SITE_NAME } from 'config';
 type SEOProps = Partial<SEOType> & { disableSeo?: boolean };
 
 function genPageTitle(title: string): string {
-  if (title.trim()[title.length - 1] === '&') {
-    return title.substring(title.length - 1).trim() + ' | ' + SITE_NAME;
+  title = title.trim();
+  if (title[title.length - 1] === '&') {
+    return title.substring(0, title.length - 1).trim() + ' | ' + SITE_NAME;
   }
   return title;
 }
@@ -39,7 +40,6 @@ const SEO: React.FC<SEOProps> = ({ disableSeo = false, ...props }) => {
       <meta name="twitter:image:src" content={image} />
       <meta name="twitter:card" content="summary" />
       <meta name="twitter:creator" content={twitterCreator} />
-      )}
     </Head>
   );
 };

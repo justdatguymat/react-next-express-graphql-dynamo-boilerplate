@@ -25,4 +25,5 @@ const App = ({ Component, pageProps }: AppProps): React.ReactElement => {
   );
 };
 
+//export default withApollo({ ssr: false })(App);
 export default App;

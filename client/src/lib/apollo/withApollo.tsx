@@ -7,37 +7,14 @@ import { ApolloProvider } from '@apollo/react-hooks';
 import { initApolloClient, initOnContext, NextPageContextApp } from '.';
 import { isServerSide } from 'utils';
 
-/*
-type ApolloPageProps = PageProps & {
-  apolloClient?: ApolloClient<NormalizedCacheObject> | null;
-  apolloState?: NormalizedCacheObject;
-};
- Creates a withApollo HOC
- that provides the apolloContext
- to a next.js Page or AppTree.
- @param  {Object} withApolloOptions
- @param  {Boolean} [withApolloOptions.ssr=false]
- @returns {(PageComponent: ReactNode) => ReactNode}
-
-    const WithApollo = ({
-      apolloClient,
-      apolloState,
-      ...pageProps
-    }: WithApolloProps<Props>): ReactNode => {
-
- */
-
-//type WithApolloProps<P> = P & {
-type WithApolloProps = {
+type WithApolloProps<P> = P & {
   apolloClient: ApolloClient<NormalizedCacheObject>;
   apolloState: NormalizedCacheObject;
 };
 
-//export const withApollo = <Props extends Object>({ ssr = false } = {}) => (
 export function withApollo<P>({ ssr = false } = {}): (C: NextPage<P>) => ReactNode {
-  //return (PageComponent: NextPage<Props>): ReactNode => {
   return function (PageComponent: NextPage<P>): ReactNode {
-    function WithApollo({ apolloClient, apolloState, ...pageProps }: WithApolloProps) {
+    function WithApollo({ apolloClient, apolloState, ...pageProps }: WithApolloProps<P>) {
       // Happens on: getDataFromTree & next.js ssr
       // or
       // Happens on: next.js csr
@@ -45,7 +22,8 @@ export function withApollo<P>({ ssr = false } = {}): (C: NextPage<P>) => ReactNo
 
       return (
         <ApolloProvider client={client}>
-          <PageComponent {...pageProps} />
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          <PageComponent {...((pageProps as any) as P)} />
         </ApolloProvider>
       );
     }
@@ -87,14 +65,8 @@ export function withApollo<P>({ ssr = false } = {}): (C: NextPage<P>) => ReactNo
 
               // Since AppComponents and PageComponents have different context types
               // we need to modify their props a little.
-              let props;
-              if (inAppContext) {
-                props = { ...pageProps, apolloClient };
-                await getDataFromTree(<AppTree {...props} pageProps={props} />);
-              } else {
-                props = { pageProps: { ...pageProps, apolloClient } };
-                await getDataFromTree(<AppTree {...props} />);
-              }
+              const props = { ...pageProps, apolloClient };
+              await getDataFromTree(<AppTree pageProps={props} />);
 
               // Take the Next.js AppTree, determine which queries are needed to render,
               // and fetch them. This method can be pretty slow since it renders

@@ -17,7 +17,6 @@ import {
 } from 'utils/errorHandlers';
 import { useToaster } from 'contexts/toasterProvider';
 import Loading from 'components/Loading';
-import { withApollo } from 'lib/apollo/withApollo';
 import { FetchResult } from '@apollo/client';
 
 type AuthResponse<T = undefined> = {
@@ -112,7 +111,6 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const register = async (input: RegisterInput): Promise<AuthResponse<RegisterInput>> => {
-    //const response = await registerMutation(input);
     const response = await registerMutation({ variables: input });
     console.log('response', response);
     return processMutationResponse<RegisterInput>(response, 'register');
@@ -158,4 +156,4 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   );
 };
 
-export default withApollo()(AuthProvider);
+export default AuthProvider;
