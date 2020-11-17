@@ -75,10 +75,20 @@ export async function buildServices(): Promise<BuildObjects> {
   });
 
   // order of applying middlewares is important
-  express.setupMiddlewares();
+  express.setupMiddleware();
   apollo.applyMiddleware({
     app: express.getApp(),
+    /*
+    cors: {
+      origin: CORS_URL,
+      credentials: true,
+      //allowedHeaders: ['Set-Cookie'],
+      //exposedHeaders: ['Set-Cookie'],
+    },
+    */
     cors: false,
+
+    //cors: true,
   });
   express.setupErrorHandlers();
   const server = new HttpServer(express.getApp(), PORT);

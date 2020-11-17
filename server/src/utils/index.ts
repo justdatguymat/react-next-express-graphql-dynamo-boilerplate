@@ -26,7 +26,8 @@ export function getEpochSeconds(date: Date = new Date()): number {
 }
 
 export function sleep(ms: number): Promise<void> {
-  return new Promise((res) => setTimeout(res, ms));
+  //return new Promise((res) => setTimeout(res, ms * 0 ));
+  return new Promise((res) => setTimeout(res, ms + 1000 ));
 }
 
 export function capitalizeFirstChar(word: string): string {

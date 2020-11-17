@@ -25,7 +25,7 @@ class ExpressApp {
   private corsOrigin: string;
 
   constructor({ production = false, sessionSecret, cookieName, corsOrigin }: ExpressAppOptions) {
-    Log.info('Initilizing the express app');
+    Log.info('Initializing the express app');
     this.target = express();
     this.production = production;
     this.sessionSecret = sessionSecret;
@@ -33,8 +33,8 @@ class ExpressApp {
     this.corsOrigin = corsOrigin;
   }
 
-  setupMiddlewares(): void {
-    Log.info('Setting express middlewares');
+  setupMiddleware(): void {
+    Log.info('Setting express middleware');
     this.target.set('trust proxy', 1);
     this.target.use(logRequest);
     this.target.use(morgan(morganTokens, { stream: logStream }));
@@ -56,6 +56,7 @@ class ExpressApp {
           httpOnly: true,
           sameSite: 'lax',
           secure: this.production, // use only in https
+          //domain: 'http://localhost:9000',
         },
       })
     );
