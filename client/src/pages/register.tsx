@@ -4,12 +4,13 @@ import { Person, AlternateEmail, Lock, LockOpen, Home } from '@material-ui/icons
 import TextFieldWithIcon from 'components/TextFieldWithIcon';
 import { convertFromFullName, testEmail, testPassword } from 'utils';
 import { useRouter } from 'next/dist/client/router';
-import { useAuth } from 'contexts/authProvider';
+import { useAuth } from 'contexts/AuthProvider';
 import { GrowAlert } from 'components/Alert';
 import LoadingButton from 'components/LoadingButton';
 import Layout from 'components/Layout';
-import { withApollo } from 'lib/apollo/withApollo';
 import { NextPage } from 'next';
+import { withApollo } from 'components/withApollo';
+import { withAuthGuard } from 'components/withAuthGuard';
 
 type RegisterForm = {
   fullName: string;
@@ -42,25 +43,19 @@ const Register: NextPage<RegisterProps> = ({ initValues = {} as RegisterForm }) 
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setMessage('');
     if (validateForm()) {
       const [firstName, lastName] = convertFromFullName(fullName);
-      const response = await register({ firstName, lastName, ...form });
+      const { user, error, message } = await register({ firstName, lastName, ...form });
 
-      if (response.message) {
-        setMessage(response.message);
-      } else {
-        setMessage('');
-      }
-      if (response.errors) {
-        const validation = { ...initValues, ...response.errors };
-        validation.fullName = '';
-        validation.fullName += validation.firstName ? validation.firstName + '. ' : '';
-        validation.fullName += validation.lastName ? validation.lastName + '.' : '';
-        setFormErrors(validation);
-      } else if (response.user) {
-        router.push(`/user/${response.user.id}`);
-      } else {
-        setMessage('Something went wrong, try again');
+      if (message) setMessage(message);
+      if (error) {
+        const { firstName, lastName } = error;
+        let fullName = firstName ? firstName + '. ' : '';
+        fullName += lastName ? lastName + '. ' : '';
+        setFormErrors((prev) => ({ ...prev, fullName, ...error }));
+      } else if (user) {
+        //router.push('/profile');
       }
     }
   };
@@ -86,8 +81,8 @@ const Register: NextPage<RegisterProps> = ({ initValues = {} as RegisterForm }) 
       errors.password = 'Password must contain a number, an upper and a lower case letter';
       valid = false;
     }
-    valid = true;
-    //setFormErrors(errors);
+    //valid = true;
+    setFormErrors(errors);
     return valid;
   };
 
@@ -117,7 +112,7 @@ const Register: NextPage<RegisterProps> = ({ initValues = {} as RegisterForm }) 
           Register
         </Typography>
         <Typography align="center" variant="h6">
-          Become a new member
+          Join our gang
         </Typography>
         {message && (
           <GrowAlert active={!!message} severity="error">
@@ -201,7 +196,7 @@ const Register: NextPage<RegisterProps> = ({ initValues = {} as RegisterForm }) 
                 type="submit"
                 color="primary"
                 variant={theme.buttonVariant.primary}
-                loading={loading.register}
+                loading={loading}
               >
                 Create Account
               </LoadingButton>
@@ -213,4 +208,9 @@ const Register: NextPage<RegisterProps> = ({ initValues = {} as RegisterForm }) 
   );
 };
 
-export default withApollo<RegisterProps>({ ssr: true })(Register);
+//export default withApollo<RegisterProps>({ ssr: false })(Register);
+
+const WithApollo = withApollo<RegisterProps>({ ssr: false })(Register);
+const WithAuthGuard = withAuthGuard<RegisterProps>({ ifAuth: '/profile' })(WithApollo);
+
+export default WithAuthGuard;

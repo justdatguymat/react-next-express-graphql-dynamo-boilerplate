@@ -46,6 +46,7 @@ class Document extends NextDocument {
       <Html lang="en">
         <Head>
           <meta name="theme-color" content={theme.palette.primary.main} />
+          <link rel="shortcut icon" href="/favicon.ico" />
           <link
             href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap"
             rel="stylesheet"

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Grid, TextField, useTheme } from '@material-ui/core';
-import { useToaster } from 'contexts/toasterProvider';
+import { useToaster } from 'contexts/ToasterProvider';
 import { useCreatePostMutation } from 'codegen/graphql-apollo';
 import { GrowAlert } from './Alert';
 import LoadingButton from './LoadingButton';
@@ -34,14 +34,12 @@ const PostForm: React.FC<PostFormProps> = ({ initValues = {} as PostForm }) => {
     const response = await createPost({ variables: form });
     console.log('createPost response', response);
 
-    if (response.errors) {
-      setMessage(response.errors[0].message);
-    } else {
-      setMessage('');
-    }
     if (response.data?.createPost) {
       toast.success('Post created');
       setForm(initValues);
+      setMessage('');
+    } else if (response.errors) {
+      setMessage(response.errors[0]['message']);
     } else {
       setMessage('Something went wrong, try again');
     }
@@ -101,7 +99,7 @@ const PostForm: React.FC<PostFormProps> = ({ initValues = {} as PostForm }) => {
                 onClick={handleSubmit}
                 loading={loading}
               >
-                Create a post
+                📜 Create a post
               </LoadingButton>
             </Box>
           </Box>

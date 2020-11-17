@@ -88,7 +88,7 @@ export const getStaticProps: GetStaticProps<PostProps, PostParams> = async (cont
   } catch (error) {
     console.error('Failed to fetch the post', error);
   }
-  return { props: { post: post }, revalidate: 10 };
+  return { props: { post: post }, revalidate: 500 };
 };
 
 export default PostPage;

@@ -5,7 +5,7 @@ import CenteredContent from './CenteredContent';
 const useStyles = makeStyles(() =>
   createStyles({
     root: {
-      minHeight: '100%',
+      height: '100%',
       position: 'relative',
     },
   })

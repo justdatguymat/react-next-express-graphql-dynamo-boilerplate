@@ -23,6 +23,9 @@ const useStyles = makeStyles((theme) =>
     backdrop: {
       backgroundColor: 'rgb(255,255,255, 0.65)',
     },
+    backdropFull: {
+      backgroundColor: 'rgb(255,255,255, 1)',
+    },
     embedded: {
       display: 'flex',
       position: 'relative',
@@ -37,17 +40,33 @@ const useStyles = makeStyles((theme) =>
 
 interface LoadingProps {
   backdrop?: boolean;
+  backdropFull?: boolean;
   embedded?: boolean;
   size?: number;
 }
 
-const Loading: React.FC<LoadingProps> = ({ backdrop = false, embedded = false, size = '40' }) => {
+const Loading: React.FC<LoadingProps> = ({
+  backdrop = false,
+  backdropFull = false,
+  embedded = false,
+  size = '40',
+}) => {
   const classes = useStyles();
 
   if (backdrop) {
     return (
       <Box className={classes.spinner}>
         <Backdrop className={classes.backdrop} open={backdrop}>
+          <CircularProgress size={size} />
+        </Backdrop>
+      </Box>
+    );
+  }
+
+  if (backdrop) {
+    return (
+      <Box className={classes.spinner}>
+        <Backdrop className={classes.backdropFull} open={backdropFull}>
           <CircularProgress size={size} />
         </Backdrop>
       </Box>

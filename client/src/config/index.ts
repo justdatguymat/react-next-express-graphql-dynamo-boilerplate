@@ -1,7 +1,5 @@
 import { isServerSide } from 'utils';
 
-export const PROD = process.env.NODE_ENV === 'production';
-
 export type SEOType = {
   title: string;
   description: string;
@@ -13,10 +11,12 @@ export type SEOType = {
   twitterCreator: string;
 };
 
-export const SITE_URL = 'http://localhost:9000/';
+export const PROD = process.env.NODE_ENV === 'production';
 
-export const SERVER_ENDPOINT =
-  isServerSide() || !PROD ? 'http://express-server:9001' : 'http://localhost:9001';
+export const SITE_URL = 'http://localhost:9000/';
+export const SERVER_ENDPOINT = isServerSide()
+  ? 'http://express-server:9001'
+  : 'http://localhost:9001';
 
 export const GRAPHQL_ENDPOINT = `${SERVER_ENDPOINT}/graphql`;
 

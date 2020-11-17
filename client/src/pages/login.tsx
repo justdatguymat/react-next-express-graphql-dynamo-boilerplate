@@ -1,16 +1,17 @@
 import React from 'react';
-import { Button, Container, Grid, Typography, useTheme } from '@material-ui/core';
+import { NextPage } from 'next';
 import { useRouter } from 'next/dist/client/router';
-import TextFieldWithIcon from 'components/TextFieldWithIcon';
+import { Button, Container, Grid, Typography, useTheme } from '@material-ui/core';
 import { AccountCircle, Lock, Person } from '@material-ui/icons';
+import { LoginInput } from 'codegen/graphql-request';
+import { useAuth } from 'contexts/AuthProvider';
 import { testEmail } from 'utils';
-import { useAuth } from 'contexts/authProvider';
 import { GrowAlert } from 'components/Alert';
+import { withApollo } from 'components/withApollo';
+import TextFieldWithIcon from 'components/TextFieldWithIcon';
 import LoadingButton from 'components/LoadingButton';
 import Layout from 'components/Layout';
-import { withApollo } from 'lib/apollo/withApollo';
-import { NextPage } from 'next';
-import { LoginInput } from 'codegen/graphql-apollo';
+import { withAuthGuard } from 'components/withAuthGuard';
 
 type LoginForm = {
   email: string;
@@ -38,22 +39,16 @@ const Login: NextPage<LoginProps, LoginProps> = ({ initValues = {} as LoginForm 
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setMessage('');
     if (validateForm()) {
-      const response = await login(form);
-      console.log('login response', response);
-
-      if (response.message) {
-        setMessage(response.message);
-      } else {
-        setMessage('');
+      const { error, user, message } = await login(form);
+      if (message) {
+        setMessage(message);
       }
-      if (response.errors) {
-        setFormErrors(response.errors);
-      } else if (response.user) {
-        console.log('ROUTER PUSH', router.query);
-        router.push(`/user/${response.user.id}`);
-      } else {
-        setMessage('Something went wrong, try again');
+      if (error) {
+        setFormErrors(error);
+      } else if (user) {
+        //router.push('/profile');
       }
     }
   };
@@ -127,7 +122,7 @@ const Login: NextPage<LoginProps, LoginProps> = ({ initValues = {} as LoginForm 
                 type="submit"
                 color="primary"
                 variant={theme.buttonVariant.primary}
-                loading={loading.login}
+                loading={loading}
               >
                 Login
               </LoadingButton>
@@ -139,4 +134,13 @@ const Login: NextPage<LoginProps, LoginProps> = ({ initValues = {} as LoginForm 
   );
 };
 
-export default withApollo<LoginProps>({ ssr: false })(Login);
+/*
+export default withAuthGuard<LoginProps>({ ifAuth: '/profile' })(
+  withApollo<LoginProps>({ ssr: false })(Login)
+);
+*/
+
+const WithApollo = withApollo<LoginProps>({ ssr: false })(Login);
+const WithAuthGuard = withAuthGuard<LoginProps>({ ifAuth: '/profile' })(WithApollo);
+
+export default WithAuthGuard;

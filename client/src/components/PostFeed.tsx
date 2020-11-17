@@ -47,7 +47,6 @@ const PostFeed: React.FC<PostFeedProps> = ({ userId = '' }) => {
           <PostCardSkeleton />
           <PostCardSkeleton />
           <PostCardSkeleton />
-          <PostCardSkeleton />
         </Box>
       )}
       <div ref={ref} />
