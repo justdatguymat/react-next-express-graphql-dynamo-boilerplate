@@ -1,7 +1,6 @@
 import React from 'react';
 import { NextPage } from 'next';
-import { useRouter } from 'next/dist/client/router';
-import { Button, Container, Grid, Typography, useTheme } from '@material-ui/core';
+import { Container, Grid, Typography, useTheme } from '@material-ui/core';
 import { AccountCircle, Lock, Person } from '@material-ui/icons';
 import { LoginInput } from 'codegen/graphql-request';
 import { useAuth } from 'contexts/AuthProvider';
@@ -24,7 +23,6 @@ interface LoginProps {
 
 const Login: NextPage<LoginProps, LoginProps> = ({ initValues = {} as LoginForm }) => {
   const theme = useTheme();
-  const router = useRouter();
   const { login, loading } = useAuth();
   const [message, setMessage] = React.useState('');
   const [form, setForm] = React.useState(initValues);
@@ -41,14 +39,12 @@ const Login: NextPage<LoginProps, LoginProps> = ({ initValues = {} as LoginForm 
     event.preventDefault();
     setMessage('');
     if (validateForm()) {
-      const { error, user, message } = await login(form);
+      const { error, message } = await login(form);
       if (message) {
         setMessage(message);
       }
       if (error) {
         setFormErrors(error);
-      } else if (user) {
-        //router.push('/profile');
       }
     }
   };
@@ -123,12 +119,6 @@ const Login: NextPage<LoginProps, LoginProps> = ({ initValues = {} as LoginForm 
     </Layout>
   );
 };
-
-/*
-export default withAuthGuard<LoginProps>({ ifAuth: '/profile' })(
-  withApollo<LoginProps>({ ssr: false })(Login)
-);
-*/
 
 const WithApollo = withApollo<LoginProps>({ ssr: false })(Login);
 const WithAuthGuard = withAuthGuard<LoginProps>({ ifAuth: '/profile' })(WithApollo);

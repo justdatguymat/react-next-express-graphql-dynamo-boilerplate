@@ -1,9 +1,8 @@
 import React from 'react';
-import { Button, Container, Grid, Typography, useTheme } from '@material-ui/core';
-import { Person, AlternateEmail, Lock, LockOpen, Home } from '@material-ui/icons';
+import { Container, Grid, Typography, useTheme } from '@material-ui/core';
+import { Person, AlternateEmail, Lock, LockOpen } from '@material-ui/icons';
 import TextFieldWithIcon from 'components/TextFieldWithIcon';
 import { convertFromFullName, testEmail, testPassword } from 'utils';
-import { useRouter } from 'next/dist/client/router';
 import { useAuth } from 'contexts/AuthProvider';
 import { GrowAlert } from 'components/Alert';
 import LoadingButton from 'components/LoadingButton';
@@ -25,7 +24,6 @@ interface RegisterProps {
 
 const Register: NextPage<RegisterProps> = ({ initValues = {} as RegisterForm }) => {
   const theme = useTheme();
-  const router = useRouter();
   const { register, loading } = useAuth();
   const [message, setMessage] = React.useState('');
   const [form, setForm] = React.useState(initValues);
@@ -46,16 +44,16 @@ const Register: NextPage<RegisterProps> = ({ initValues = {} as RegisterForm }) 
     setMessage('');
     if (validateForm()) {
       const [firstName, lastName] = convertFromFullName(fullName);
-      const { user, error, message } = await register({ firstName, lastName, ...form });
+      const { error, message } = await register({ firstName, lastName, ...form });
 
-      if (message) setMessage(message);
+      if (message) {
+        setMessage(message);
+      }
       if (error) {
         const { firstName, lastName } = error;
         let fullName = firstName ? firstName + '. ' : '';
         fullName += lastName ? lastName + '. ' : '';
         setFormErrors((prev) => ({ ...prev, fullName, ...error }));
-      } else if (user) {
-        //router.push('/profile');
       }
     }
   };
@@ -81,7 +79,6 @@ const Register: NextPage<RegisterProps> = ({ initValues = {} as RegisterForm }) 
       errors.password = 'Password must contain a number, an upper and a lower case letter';
       valid = false;
     }
-    //valid = true;
     setFormErrors(errors);
     return valid;
   };
@@ -196,8 +193,6 @@ const Register: NextPage<RegisterProps> = ({ initValues = {} as RegisterForm }) 
     </Layout>
   );
 };
-
-//export default withApollo<RegisterProps>({ ssr: false })(Register);
 
 const WithApollo = withApollo<RegisterProps>({ ssr: false })(Register);
 const WithAuthGuard = withAuthGuard<RegisterProps>({ ifAuth: '/profile' })(WithApollo);
