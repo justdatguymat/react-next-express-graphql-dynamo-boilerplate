@@ -17,6 +17,9 @@ services:
     links: 
       - redis
       - dynamodb
+    depends_on:
+      - redis
+      - dynamodb
 
   next-react:
     build:
@@ -30,6 +33,8 @@ services:
       - ./client/node_modules:/app/client/node_modules
       - ./client/.graphql.json:/app/client/.graphql.json
     links:
+      - express-server
+    depends_on:
       - express-server
 
   dynamodb:
