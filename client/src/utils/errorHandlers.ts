@@ -3,6 +3,16 @@ import { GraphQLError } from 'graphql';
 
 type ErrorCodes = 'USER_NOT_FOUND' | 'WRONG_PASSWORD' | 'UNAUTHENTICATED' | 'USER_ALREADY_EXIST';
 
+export function extractCustomError(graphQLErrors: GraphQLError[], code: ErrorCodes): Error | null {
+  let error = null;
+  graphQLErrors.forEach((err) => {
+    if (err.extensions?.code === code) {
+      error = err;
+    }
+  });
+  return error;
+}
+
 export function inputValidation<T>(errors: ValidationError[]): T {
   const reducer = (accumulate: T, { property, constraints }: ValidationError): T => {
     accumulate[property] = constraints ? Object.values<string>(constraints).join('. ') : '';
@@ -24,14 +34,8 @@ export function extractValidationErrors(
   return graphQLErrors.reduce<ValidationError[]>(reducer, []);
 }
 
-export function extractCustomError(graphQLErrors: GraphQLError[], code: ErrorCodes): Error | null {
-  let error = null;
-  graphQLErrors.forEach((err) => {
-    if (err.extensions?.code === code) {
-      error = err;
-    }
-  });
-  return error;
+export function extractFormErrors<T>(errors: Readonly<GraphQLError[]>): T {
+  return inputValidation(extractValidationErrors(errors));
 }
 
 export function extractMessageErrors(graphQLErrors: Readonly<GraphQLError[]>): string {

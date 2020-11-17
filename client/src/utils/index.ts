@@ -28,14 +28,14 @@ export function createMyTheme(options: ThemeOptions): Theme {
 }
 
 export function convertFromFullName(fullName: string): [string, string] {
-  const splitted = fullName.trim().split(' ');
-  const firstName = splitted[0];
-  const lastName = splitted.slice(1).join(' ');
+  const split = fullName.trim().split(' ');
+  const firstName = split[0];
+  const lastName = split.slice(1).join(' ');
   return [firstName, lastName];
 }
 
 export function isServerSide(): boolean {
-  return typeof window === undefined;
+  return typeof window === 'undefined';
 }
 
 export function getHeightPercentile(): number {
