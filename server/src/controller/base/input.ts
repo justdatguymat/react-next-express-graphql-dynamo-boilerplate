@@ -11,6 +11,9 @@ export abstract class BaseRecordInput implements Partial<BaseRecord> {
 
   @Field(() => String, { nullable: true })
   data: string;
+
+  @Field(() => String, { nullable: true })
+  type: string;
 }
 
 @ArgsType()

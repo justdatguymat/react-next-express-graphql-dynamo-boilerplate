@@ -49,7 +49,7 @@ const Loading: React.FC<LoadingProps> = ({
   backdrop = false,
   backdropFull = false,
   embedded = false,
-  size = '40',
+  size = '60',
 }) => {
   const classes = useStyles();
 
@@ -63,7 +63,7 @@ const Loading: React.FC<LoadingProps> = ({
     );
   }
 
-  if (backdrop) {
+  if (backdropFull) {
     return (
       <Box className={classes.spinner}>
         <Backdrop className={classes.backdropFull} open={backdropFull}>

@@ -21,7 +21,7 @@ const UserProfile: NextPage<UserProfileProps> = ({ user }) => {
 
   console.log('router.isFallback', router.isFallback);
   if (router.isFallback) {
-    return <Loading backdrop />;
+    return <Loading />;
   }
 
   if (!user) {
@@ -73,7 +73,7 @@ export const getStaticProps: GetStaticProps<UserProfileProps, UserProfileParams>
     console.info('Failed to fetch the user ', error);
   }
 
-  return { props: { user: user }, revalidate: 500 };
+  return { props: { user }, revalidate: 500 };
 };
 
 export default withApollo<UserProfileProps>({ ssr: false })(UserProfile);

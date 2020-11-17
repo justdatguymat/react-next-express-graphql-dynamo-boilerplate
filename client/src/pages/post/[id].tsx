@@ -35,7 +35,7 @@ const PostPage: React.FC<PostProps> = ({ post }) => {
 
   console.log('router.isFallback', router.isFallback);
   if (router.isFallback) {
-    return <Loading backdrop size={50} />;
+    return <Loading />;
   }
 
   if (!post) {
@@ -88,7 +88,7 @@ export const getStaticProps: GetStaticProps<PostProps, PostParams> = async (cont
   } catch (error) {
     console.error('Failed to fetch the post', error);
   }
-  return { props: { post: post }, revalidate: 500 };
+  return { props: { post }, revalidate: 500 };
 };
 
 export default PostPage;

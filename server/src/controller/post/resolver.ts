@@ -11,9 +11,9 @@ const PostResolverBase = crudResolverFactory<Post, PostInput>(Post, PostInput);
 @Resolver(() => Post)
 export class PostResolver extends PostResolverBase {
   @Query(() => [Post])
-  async getUserPosts(
+  async getFeedPosts(
     @Ctx() { db }: ApolloResolverContext,
-    @Arg('userId', () => String) userId: string,
+    @Arg('userId', () => String, { nullable: true }) userId?: string,
     @Arg('lastKey', () => PostInput, { nullable: true }) startKey?: PostInput
   ): Promise<Post[]> {
     const posts = await db.pagination<Post>(Post, userId, 'ACTIVE', { startKey });

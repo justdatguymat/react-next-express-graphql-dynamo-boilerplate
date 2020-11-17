@@ -1,26 +1,34 @@
 import React from 'react';
 import { NextPage } from 'next';
 import { Container, Grid, Typography } from '@material-ui/core';
+import { User } from 'codegen/graphql-request';
 import { useAuth } from 'contexts/AuthProvider';
+import { withAuthGuard } from 'components/withAuthGuard';
 import { withApollo } from 'components/withApollo';
 import PostForm from 'components/PostForm';
 import PostFeed from 'components/PostFeed';
 import Layout from 'components/Layout';
-import { withAuthGuard } from 'components/withAuthGuard';
 import Loading from 'components/Loading';
 
-interface ProfileProps {}
+interface ProfileProps {
+  authUser?: User;
+}
 
-const Profile: NextPage<ProfileProps> = () => {
+const Profile: NextPage<ProfileProps> = ({ authUser }) => {
   const { user } = useAuth();
-  if (!user) {
+  console.log('Profile', authUser, user);
+  if (!user && !authUser) {
     return <Loading embedded />;
   }
 
-  const fullName = `${user.firstName} ${user.lastName}`;
+  const profileUser = user || authUser;
+
+  if (!profileUser) return null;
+
+  const fullName = `${profileUser.firstName} ${profileUser.lastName}`;
 
   return (
-    <Layout authRequired disableSeo title="Non-SEO title">
+    <Layout disableSeo title={fullName}>
       <Container maxWidth="sm">
         <Grid container spacing={2}>
           <Grid item xs={12}>
@@ -28,14 +36,14 @@ const Profile: NextPage<ProfileProps> = () => {
               {fullName}
             </Typography>
             <Typography align="center" variant="body2" color="textSecondary">
-              {user.id} - {user.range}
+              {profileUser.id} - {profileUser.range}
             </Typography>
           </Grid>
           <Grid item xs={12}>
             <PostForm />
           </Grid>
           <Grid item xs={12}>
-            <PostFeed userId={user ? user.id : ''} />
+            <PostFeed key="profile" userId={profileUser.id} />
           </Grid>
         </Grid>
       </Container>

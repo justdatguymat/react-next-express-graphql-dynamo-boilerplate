@@ -33,7 +33,7 @@ export const useAuth = (): AuthContextInterface => useContext(AuthContext);
 
 const AuthProvider: React.FC<AuthProviderProps> = ({ children, authUser }) => {
   const toast = useToaster();
-  const [initLoading, setInitLoading] = React.useState(false);
+  const [initLoading, setInitLoading] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
   const [user, setUser] = React.useState<User | null>(authUser || null);
 
@@ -52,7 +52,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children, authUser }) => {
         setInitLoading(false);
       }
     }
-    setInitLoading(true);
+    //setInitLoading(true);
     loadMyself();
   }, []);
 
@@ -100,7 +100,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children, authUser }) => {
     setLoading(true);
     try {
       await SDK.Logout();
-      toast.info('👋 Bye-Bye 👋');
+      toast.info('👋 Bye Bye 👋');
       setUser(null);
       return true;
     } catch (err) {
@@ -122,7 +122,8 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children, authUser }) => {
 
   return (
     <AuthContext.Provider value={auth}>
-      {initLoading ? <Loading backdropFull size={60} /> : children}
+      {initLoading && <Loading />}
+      {!initLoading && children}
     </AuthContext.Provider>
   );
 };

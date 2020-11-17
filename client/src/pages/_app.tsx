@@ -1,5 +1,8 @@
 import React from 'react';
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
 import { AppProps } from 'next/app';
+import Router from 'next/router';
 import { ThemeProvider, CssBaseline } from '@material-ui/core';
 import theme from 'theme';
 import AuthProvider from 'contexts/AuthProvider';
@@ -9,6 +12,19 @@ import { User } from 'codegen/graphql-request';
 interface Props {
   authUser?: User;
 }
+
+Router.events.on('routeChangeStart', () => {
+  console.log('Router starting');
+  NProgress.start();
+});
+Router.events.on('routeChangeComplete', () => {
+  console.log('Router complete');
+  NProgress.done();
+});
+Router.events.on('routeChangeError', () => {
+  console.log('Router error');
+  NProgress.done();
+});
 
 const MyApp = ({ Component, pageProps, authUser }: AppProps & Props): React.ReactElement => {
   React.useEffect(() => {

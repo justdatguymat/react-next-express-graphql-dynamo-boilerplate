@@ -39,9 +39,8 @@ query getUser($id: ID, $range: String, $data: String) {
   }
 }
 
-
-query getUserPosts($userId: String!, $lastKey: PostInput) {
-  getUserPosts( 
+query getFeedPosts($userId: String, $lastKey: PostInput) {
+  getFeedPosts( 
     userId: $userId
     lastKey: $lastKey
   ) {

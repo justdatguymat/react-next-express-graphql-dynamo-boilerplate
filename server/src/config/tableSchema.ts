@@ -1,4 +1,4 @@
-import { CreateTableInput } from 'aws-sdk/clients/dynamodb';
+import { CreateTableInput, UpdateTableInput } from 'aws-sdk/clients/dynamodb';
 import { DYNAMO_TABLE } from '@config/constants';
 
 const CAP_UNITS_TABLE = 10;
@@ -10,8 +10,11 @@ export enum LSI {
 }
 export enum GSI {
   RangeData = 'range-data-global',
+  TypeData = 'type-data-global',
   TypeRange = 'type-range-global',
 }
+
+export const TABLE_UPDATE: UpdateTableInput | null = null;
 
 export const TABLE_SCHEMA: CreateTableInput = {
   TableName: DYNAMO_TABLE,
@@ -55,8 +58,22 @@ export const TABLE_SCHEMA: CreateTableInput = {
     {
       IndexName: GSI.RangeData,
       KeySchema: [
-        { AttributeName: 'range', KeyType: 'HASH' },
+        { AttributeName: 'type', KeyType: 'HASH' },
         { AttributeName: 'data', KeyType: 'RANGE' },
+      ],
+      Projection: {
+        ProjectionType: 'ALL',
+      },
+      ProvisionedThroughput: {
+        ReadCapacityUnits: CAP_UNITS_INDEX,
+        WriteCapacityUnits: CAP_UNITS_INDEX,
+      },
+    },
+    {
+      IndexName: GSI.TypeData,
+      KeySchema: [
+        { AttributeName: 'type', KeyType: 'HASH' },
+        { AttributeName: 'range', KeyType: 'RANGE' },
       ],
       Projection: {
         ProjectionType: 'ALL',

@@ -65,28 +65,53 @@ class DynamoWrapper {
     dataPrefix = '',
     options: QueryOptions
   ): Promise<T[]> {
+    const data = beginsWith(dataPrefix);
+
     let items: T[] = [];
-    const range = `${Model.__type__}#${objectId}`;
-    const pagination = this.mapper
-      .query(Model, { range, data: beginsWith(dataPrefix) }, { ...defaultQueryOptions, ...options })
-      .pages();
+    let pagination;
+    if (objectId) {
+      const range = `${Model.__type__}#${objectId}`;
+      const indexName = GSI.RangeData;
+      const startKey = options.startKey
+        ? {
+          id: options.startKey.id,
+          range: options.startKey.range,
+          data: options.startKey.data,
+        }
+        : undefined;
+      pagination = this.mapper
+        .query<T>(
+          Model,
+          { range, data },
+          { ...defaultQueryOptions, ...options, startKey, indexName }
+        )
+        .pages();
+    } else {
+      const type = Model.__type__;
+      const indexName = GSI.TypeData;
+      const startKey = options.startKey
+        ? {
+          id: options.startKey.id,
+          type: options.startKey.type,
+          data: options.startKey.data,
+          range: options.startKey.range,
+        }
+        : undefined;
+      pagination = this.mapper
+        .query<T>(
+          Model,
+          { type, data },
+          { ...defaultQueryOptions, ...options, startKey, indexName }
+        )
+        .pages();
+    }
 
     for await (const page of pagination) {
       items = items.concat(page);
     }
+    pagination.lastEvaluatedKey;
     await sleep(1500);
     return items;
-  }
-
-  async getAllOwnedByUser<T>(
-    Model: ModelBaseType<T>,
-    userId: string,
-    dataPrefix = ''
-  ): Promise<T[]> {
-    return await this.pagination(Model, userId, dataPrefix, {
-      limit: undefined,
-      pageSize: undefined,
-    });
   }
 
   async getAll<T>(Model: ModelBaseType<T>, rangePrefix = ''): Promise<T[]> {

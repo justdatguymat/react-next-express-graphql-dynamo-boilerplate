@@ -2,6 +2,7 @@ fragment UserFragment on User {
   id
   range
   createdAt
+  type
   updatedAt
   firstName
   lastName
@@ -11,6 +12,7 @@ fragment PostFragment on Post {
   id
   range
   data
+  type
   createdAt
   updatedAt
   title

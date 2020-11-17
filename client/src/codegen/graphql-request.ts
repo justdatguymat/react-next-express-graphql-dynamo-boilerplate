@@ -18,7 +18,7 @@ export type Query = {
   __typename?: 'Query';
   getPost: Post;
   listPosts: Array<Post>;
-  getUserPosts: Array<Post>;
+  getFeedPosts: Array<Post>;
   getUser: User;
   listUsers: Array<User>;
   myself: User;
@@ -32,9 +32,9 @@ export type QueryGetPostArgs = {
 };
 
 
-export type QueryGetUserPostsArgs = {
+export type QueryGetFeedPostsArgs = {
   lastKey?: Maybe<PostInput>;
-  userId: Scalars['String'];
+  userId?: Maybe<Scalars['String']>;
 };
 
 
@@ -165,12 +165,12 @@ export type LoginInput = {
 
 export type UserFragmentFragment = (
   { __typename?: 'User' }
-  & Pick<User, 'id' | 'range' | 'createdAt' | 'updatedAt' | 'firstName' | 'lastName'>
+  & Pick<User, 'id' | 'range' | 'createdAt' | 'type' | 'updatedAt' | 'firstName' | 'lastName'>
 );
 
 export type PostFragmentFragment = (
   { __typename?: 'Post' }
-  & Pick<Post, 'id' | 'range' | 'data' | 'createdAt' | 'updatedAt' | 'title' | 'content'>
+  & Pick<Post, 'id' | 'range' | 'data' | 'type' | 'createdAt' | 'updatedAt' | 'title' | 'content'>
 );
 
 export type RegisterMutationVariables = Exact<{
@@ -341,15 +341,15 @@ export type GetUserQuery = (
   ) }
 );
 
-export type GetUserPostsQueryVariables = Exact<{
-  userId: Scalars['String'];
+export type GetFeedPostsQueryVariables = Exact<{
+  userId?: Maybe<Scalars['String']>;
   lastKey?: Maybe<PostInput>;
 }>;
 
 
-export type GetUserPostsQuery = (
+export type GetFeedPostsQuery = (
   { __typename?: 'Query' }
-  & { getUserPosts: Array<(
+  & { getFeedPosts: Array<(
     { __typename?: 'Post' }
     & { author: (
       { __typename?: 'User' }
@@ -364,6 +364,7 @@ export const UserFragmentFragmentDoc = gql`
   id
   range
   createdAt
+  type
   updatedAt
   firstName
   lastName
@@ -374,6 +375,7 @@ export const PostFragmentFragmentDoc = gql`
   id
   range
   data
+  type
   createdAt
   updatedAt
   title
@@ -478,9 +480,9 @@ export const GetUserDocument = gql`
   }
 }
     ${UserFragmentFragmentDoc}`;
-export const GetUserPostsDocument = gql`
-    query getUserPosts($userId: String!, $lastKey: PostInput) {
-  getUserPosts(userId: $userId, lastKey: $lastKey) {
+export const GetFeedPostsDocument = gql`
+    query getFeedPosts($userId: String, $lastKey: PostInput) {
+  getFeedPosts(userId: $userId, lastKey: $lastKey) {
     ...PostFragment
     author {
       ...UserFragment
@@ -532,8 +534,8 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     getUser(variables?: GetUserQueryVariables): Promise<GetUserQuery> {
       return withWrapper(() => client.request<GetUserQuery>(print(GetUserDocument), variables));
     },
-    getUserPosts(variables: GetUserPostsQueryVariables): Promise<GetUserPostsQuery> {
-      return withWrapper(() => client.request<GetUserPostsQuery>(print(GetUserPostsDocument), variables));
+    getFeedPosts(variables?: GetFeedPostsQueryVariables): Promise<GetFeedPostsQuery> {
+      return withWrapper(() => client.request<GetFeedPostsQuery>(print(GetFeedPostsDocument), variables));
     }
   };
 }

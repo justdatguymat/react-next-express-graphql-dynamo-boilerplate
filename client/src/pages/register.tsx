@@ -112,7 +112,7 @@ const Register: NextPage<RegisterProps> = ({ initValues = {} as RegisterForm }) 
           Register
         </Typography>
         <Typography align="center" variant="h6">
-          Join our gang
+          Join the gang 💪
         </Typography>
         {message && (
           <GrowAlert active={!!message} severity="error">
@@ -178,18 +178,7 @@ const Register: NextPage<RegisterProps> = ({ initValues = {} as RegisterForm }) 
             error={!!formErrors.repassword}
             helperText={formErrors.repassword}
           />
-          <Grid container spacing={1} justify="space-between">
-            <Grid item xs={4}>
-              <Button
-                variant={theme.buttonVariant.secondary}
-                fullWidth
-                color="primary"
-                startIcon={<Home />}
-                onClick={() => router.push('/')}
-              >
-                Home
-              </Button>
-            </Grid>
+          <Grid container spacing={1} justify="flex-end">
             <Grid item xs={8}>
               <LoadingButton
                 fullWidth
@@ -198,7 +187,7 @@ const Register: NextPage<RegisterProps> = ({ initValues = {} as RegisterForm }) 
                 variant={theme.buttonVariant.primary}
                 loading={loading}
               >
-                Create Account
+                ✔ Create Account
               </LoadingButton>
             </Grid>
           </Grid>

@@ -105,17 +105,7 @@ const Login: NextPage<LoginProps, LoginProps> = ({ initValues = {} as LoginForm 
             helperText={formErrors.password}
           />
 
-          <Grid container spacing={1} justify="space-between">
-            <Grid item xs={4}>
-              <Button
-                variant={theme.buttonVariant.secondary}
-                fullWidth
-                color="primary"
-                onClick={() => router.push('/register')}
-              >
-                Register
-              </Button>
-            </Grid>
+          <Grid container spacing={1} justify="flex-end">
             <Grid item xs={8}>
               <LoadingButton
                 fullWidth
@@ -124,7 +114,7 @@ const Login: NextPage<LoginProps, LoginProps> = ({ initValues = {} as LoginForm 
                 variant={theme.buttonVariant.primary}
                 loading={loading}
               >
-                Login
+                🚀 Login
               </LoadingButton>
             </Grid>
           </Grid>

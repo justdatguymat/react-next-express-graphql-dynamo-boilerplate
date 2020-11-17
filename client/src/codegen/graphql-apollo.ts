@@ -17,7 +17,7 @@ export type Query = {
   __typename?: 'Query';
   getPost: Post;
   listPosts: Array<Post>;
-  getUserPosts: Array<Post>;
+  getFeedPosts: Array<Post>;
   getUser: User;
   listUsers: Array<User>;
   myself: User;
@@ -31,9 +31,9 @@ export type QueryGetPostArgs = {
 };
 
 
-export type QueryGetUserPostsArgs = {
+export type QueryGetFeedPostsArgs = {
   lastKey?: Maybe<PostInput>;
-  userId: Scalars['String'];
+  userId?: Maybe<Scalars['String']>;
 };
 
 
@@ -164,12 +164,12 @@ export type LoginInput = {
 
 export type UserFragmentFragment = (
   { __typename?: 'User' }
-  & Pick<User, 'id' | 'range' | 'createdAt' | 'updatedAt' | 'firstName' | 'lastName'>
+  & Pick<User, 'id' | 'range' | 'createdAt' | 'type' | 'updatedAt' | 'firstName' | 'lastName'>
 );
 
 export type PostFragmentFragment = (
   { __typename?: 'Post' }
-  & Pick<Post, 'id' | 'range' | 'data' | 'createdAt' | 'updatedAt' | 'title' | 'content'>
+  & Pick<Post, 'id' | 'range' | 'data' | 'type' | 'createdAt' | 'updatedAt' | 'title' | 'content'>
 );
 
 export type RegisterMutationVariables = Exact<{
@@ -340,15 +340,15 @@ export type GetUserQuery = (
   ) }
 );
 
-export type GetUserPostsQueryVariables = Exact<{
-  userId: Scalars['String'];
+export type GetFeedPostsQueryVariables = Exact<{
+  userId?: Maybe<Scalars['String']>;
   lastKey?: Maybe<PostInput>;
 }>;
 
 
-export type GetUserPostsQuery = (
+export type GetFeedPostsQuery = (
   { __typename?: 'Query' }
-  & { getUserPosts: Array<(
+  & { getFeedPosts: Array<(
     { __typename?: 'Post' }
     & { author: (
       { __typename?: 'User' }
@@ -363,6 +363,7 @@ export const UserFragmentFragmentDoc = gql`
   id
   range
   createdAt
+  type
   updatedAt
   firstName
   lastName
@@ -373,6 +374,7 @@ export const PostFragmentFragmentDoc = gql`
   id
   range
   data
+  type
   createdAt
   updatedAt
   title
@@ -797,9 +799,9 @@ export function useGetUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Ge
 export type GetUserQueryHookResult = ReturnType<typeof useGetUserQuery>;
 export type GetUserLazyQueryHookResult = ReturnType<typeof useGetUserLazyQuery>;
 export type GetUserQueryResult = Apollo.QueryResult<GetUserQuery, GetUserQueryVariables>;
-export const GetUserPostsDocument = gql`
-    query getUserPosts($userId: String!, $lastKey: PostInput) {
-  getUserPosts(userId: $userId, lastKey: $lastKey) {
+export const GetFeedPostsDocument = gql`
+    query getFeedPosts($userId: String, $lastKey: PostInput) {
+  getFeedPosts(userId: $userId, lastKey: $lastKey) {
     ...PostFragment
     author {
       ...UserFragment
@@ -810,28 +812,28 @@ export const GetUserPostsDocument = gql`
 ${UserFragmentFragmentDoc}`;
 
 /**
- * __useGetUserPostsQuery__
+ * __useGetFeedPostsQuery__
  *
- * To run a query within a React component, call `useGetUserPostsQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetUserPostsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useGetFeedPostsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetFeedPostsQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useGetUserPostsQuery({
+ * const { data, loading, error } = useGetFeedPostsQuery({
  *   variables: {
  *      userId: // value for 'userId'
  *      lastKey: // value for 'lastKey'
  *   },
  * });
  */
-export function useGetUserPostsQuery(baseOptions?: Apollo.QueryHookOptions<GetUserPostsQuery, GetUserPostsQueryVariables>) {
-        return Apollo.useQuery<GetUserPostsQuery, GetUserPostsQueryVariables>(GetUserPostsDocument, baseOptions);
+export function useGetFeedPostsQuery(baseOptions?: Apollo.QueryHookOptions<GetFeedPostsQuery, GetFeedPostsQueryVariables>) {
+        return Apollo.useQuery<GetFeedPostsQuery, GetFeedPostsQueryVariables>(GetFeedPostsDocument, baseOptions);
       }
-export function useGetUserPostsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetUserPostsQuery, GetUserPostsQueryVariables>) {
-          return Apollo.useLazyQuery<GetUserPostsQuery, GetUserPostsQueryVariables>(GetUserPostsDocument, baseOptions);
+export function useGetFeedPostsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetFeedPostsQuery, GetFeedPostsQueryVariables>) {
+          return Apollo.useLazyQuery<GetFeedPostsQuery, GetFeedPostsQueryVariables>(GetFeedPostsDocument, baseOptions);
         }
-export type GetUserPostsQueryHookResult = ReturnType<typeof useGetUserPostsQuery>;
-export type GetUserPostsLazyQueryHookResult = ReturnType<typeof useGetUserPostsLazyQuery>;
-export type GetUserPostsQueryResult = Apollo.QueryResult<GetUserPostsQuery, GetUserPostsQueryVariables>;
+export type GetFeedPostsQueryHookResult = ReturnType<typeof useGetFeedPostsQuery>;
+export type GetFeedPostsLazyQueryHookResult = ReturnType<typeof useGetFeedPostsLazyQuery>;
+export type GetFeedPostsQueryResult = Apollo.QueryResult<GetFeedPostsQuery, GetFeedPostsQueryVariables>;

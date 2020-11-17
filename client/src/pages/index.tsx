@@ -1,9 +1,11 @@
 import React from 'react';
-import { Typography, Box, Link } from '@material-ui/core';
+import { Typography, Box, Link, Container } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/core/styles';
 import Layout from 'components/Layout';
 import { useAuth } from 'contexts/AuthProvider';
 import { NextPage } from 'next';
+import PostFeed from 'components/PostFeed';
+import { withApollo } from 'components/withApollo';
 
 const useTechnologyLinks = () => [
   {
@@ -63,20 +65,23 @@ const Home: NextPage<HomeProps> = () => {
         ))}
       </Box>
 
-      <Typography align="center" variant="body2" color="textSecondary">
-        created by{' '}
-        <Link
-          variant="body2"
-          color="inherit"
-          href="https://github.com/justdatguymat"
-          target="_blank"
-          rel="noopener"
-        >
-          Matt Koltun 😎
-        </Link>
-      </Typography>
+      <Container maxWidth="sm">
+        <Typography align="center" variant="body2" color="textSecondary">
+          created by{' '}
+          <Link
+            variant="body2"
+            color="inherit"
+            href="https://github.com/justdatguymat"
+            target="_blank"
+            rel="noopener"
+          >
+            Matt Koltun 😎
+          </Link>
+        </Typography>
+        {isAuthenticated && <PostFeed />}
+      </Container>
     </Layout>
   );
 };
 
-export default Home;
+export default withApollo({ ssr: false })(Home);

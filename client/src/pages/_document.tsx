@@ -59,26 +59,11 @@ class Document extends NextDocument {
                 margin: 0;
                 font-size: 1rem;
               }
-              html {
-                min-height: 100vh;
-                width: 100%;
+              html,
+              body,
+              div#__next {
                 position: relative;
-              }
-              body {
-                min-height: 100%;
-                width: 100%;
-              }
-              #app-container {
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                overflow-y: hidden;
-              }
-              div#__next,
-              div#__next > div {
-                min-height: 100vh;
+                height: 100%;
               }
             `}
           </style>

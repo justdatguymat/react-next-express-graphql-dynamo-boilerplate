@@ -10,7 +10,7 @@ const NavButtons: React.FC<NavButtonsProps> = () => {
   const router = useRouter();
   const { isAuthenticated, logout } = useAuth();
   return (
-    <Box height="50" my={2} display="flex" justifyContent="center" width="100%">
+    <Box my={1} display="flex" justifyContent="center" width="100%">
       <CardButton buttonProps={{ onClick: () => router.push('/') }}>
         <Typography variant="button">🏠 Home</Typography>
       </CardButton>
@@ -27,7 +27,7 @@ const NavButtons: React.FC<NavButtonsProps> = () => {
       {!isAuthenticated && (
         <>
           <CardButton buttonProps={{ onClick: () => router.push('/login') }}>
-            <Typography variant="button">🚀 Login</Typography>
+            <Typography variant="button">🎉 Login</Typography>
           </CardButton>
           <CardButton buttonProps={{ onClick: () => router.push('/register') }}>
             <Typography variant="button">🌟 Register</Typography>
