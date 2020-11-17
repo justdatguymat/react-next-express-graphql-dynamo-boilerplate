@@ -18,19 +18,32 @@ let globalApolloClient: ApolloClient<NormalizedCacheObject> | null = null;
 
 export default function createApolloClient(
   initialState: NormalizedCacheObject = {},
-  ctx?: NextPageContext,
-  cookie?: string
+  ctx?: NextPageContext
 ): ApolloClient<NormalizedCacheObject> {
   // The `ctx` (NextPageContext) will only be present on the server.
   // use it to extract auth headers (ctx.req) or similar.
+  //const cookie = isServerSide && (ctx?.req?.headers.cookie as string);
+  //const headers = cookie ? { cookie } : undefined;
+
+  //console.log('cookie, header', headers);
+
+  //const link = createHttpLink({
+  /*
+  const link = new HttpLink({
+    uri: GRAPHQL_ENDPOINT,
+    credentials: 'include', // `credentials`, `headers`, `same-origin`
+    //fetch,
+  });
+  */
+
   return new ApolloClient({
+    connectToDevTools: !ctx,
     ssrMode: Boolean(ctx),
     link: new HttpLink({
       uri: GRAPHQL_ENDPOINT,
       credentials: 'include', // `credentials`, `headers`, `same-origin`
-      headers: cookie ? { cookie } : undefined,
-      fetch: fetch,
     }),
+    //fetch,
     cache: new InMemoryCache().restore(initialState),
   });
 }
@@ -84,14 +97,13 @@ export function initOnContext(ctx: NextPageContextApp): NextPageContextApp {
  * @param  {NextPageContext} ctx
  */
 export function initApolloClient(
-  initialState: NormalizedCacheObject,
-  ctx?: NextPageContext,
-  cookie?: string
+  initialState?: NormalizedCacheObject,
+  ctx?: NextPageContext
 ): ApolloClient<NormalizedCacheObject> {
   // Make sure to create a new client for every server-side request so that data
   // isn't shared between connections (which would be bad)
   if (isServerSide()) {
-    return createApolloClient(initialState, ctx, cookie);
+    return createApolloClient(initialState, ctx);
   }
 
   // Reuse client on the client-side
