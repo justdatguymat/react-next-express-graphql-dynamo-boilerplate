@@ -65,6 +65,7 @@ export type User = {
   type: Scalars['String'];
   createdAt: Scalars['DateTime'];
   updatedAt: Scalars['DateTime'];
+  role: Scalars['String'];
   firstName: Scalars['String'];
   lastName: Scalars['String'];
   posts: Array<Post>;
